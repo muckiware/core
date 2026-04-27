@@ -9,12 +9,12 @@
  */
 namespace Muckiware\Core\Framework;
 
-use Shopware\Core\Framework\Bundle;
 use Shopware\Core\Framework\Adapter\Cache\CacheCompilerPass;
 use Shopware\Core\Framework\Adapter\Cache\CacheValueCompressor;
 use Shopware\Core\Framework\Adapter\Cache\ReverseProxy\ReverseProxyCompilerPass;
 use Shopware\Core\Framework\Adapter\Cache\StampedeProtectionConfigurator;
 use Shopware\Core\Framework\Adapter\Redis\RedisConnectionsCompilerPass;
+use Shopware\Core\Framework\Bundle;
 use Shopware\Core\Framework\DataAbstractionLayer\AttributeEntityCompiler;
 use Shopware\Core\Framework\DependencyInjection\CompilerPass\AssetBundleRegistrationCompilerPass;
 use Shopware\Core\Framework\DependencyInjection\CompilerPass\AssetRegistrationCompilerPass;
@@ -37,18 +37,22 @@ use Shopware\Core\Framework\DependencyInjection\CompilerPass\TwigEnvironmentComp
 use Shopware\Core\Framework\DependencyInjection\CompilerPass\TwigLoaderConfigCompilerPass;
 use Shopware\Core\Framework\DependencyInjection\FrameworkExtension;
 use Shopware\Core\Framework\Feature\FeatureFlagRegistry;
+use Shopware\Core\Framework\Framework as SWFramework;
 use Shopware\Core\Framework\Increment\IncrementerGatewayCompilerPass;
 use Shopware\Core\Framework\Log\Package;
 use Shopware\Core\Framework\MessageQueue\MessageHandlerCompilerPass;
 use Shopware\Core\Framework\Telemetry\Metrics\MeterProvider;
 use Shopware\Core\Framework\Test\DependencyInjection\CompilerPass\ContainerVisibilityCompilerPass;
 use Shopware\Core\Framework\Test\RateLimiter\DisableRateLimiterCompilerPass;
+
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+
+use Muckiware\Core\Helper;
 
 /**
  * @internal
@@ -68,47 +72,13 @@ class Framework extends Bundle
 
     /**
      * {@inheritdoc}
+     * @throws \Exception
      */
-
     public function build(ContainerBuilder $container): void
     {
         $container->setParameter('locale', 'en-GB');
-
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/DependencyInjection/'));
-        $loader->load('services.xml');
-        $loader->load('acl.xml');
-        $loader->load('cache.xml');
-        $loader->load('api.xml');
-        $loader->load('app.xml');
-        $loader->load('custom-field.xml');
-        $loader->load('data-abstraction-layer.xml');
-        $loader->load('event.xml');
-        $loader->load('hydrator.xml');
-        $loader->load('filesystem.xml');
-        $loader->load('message-queue.xml');
-        $loader->load('plugin.xml');
-        $loader->load('rule.xml');
-        $loader->load('scheduled-task.xml');
-        $loader->load('store.xml');
-        $loader->load('script.xml');
-        $loader->load('language.xml');
-        $loader->load('update.xml');
-        $loader->load('seo.xml');
-        $loader->load('webhook.xml');
-        $loader->load('rate-limiter.xml');
-        $loader->load('increment.xml');
-        $loader->load('flag.xml');
-        $loader->load('health.xml');
-        $loader->load('telemetry.xml');
-        $loader->load('notification.xml');
-        $loader->load('sso.xml');
-
-        if ($container->getParameter('kernel.environment') === 'test') {
-            $loader->load('services_test.xml');
-            $loader->load('store_test.xml');
-            $loader->load('seo_test.xml');
-            $loader->load('app_test.xml');
-        }
+        $this->loadMuWaServices($container);
+        $this->loadSWServices($container);
 
         /** Needs to run after @see RegisterAutoconfigureAttributesPass (priority 100) to include all services that are autoconfigured */
         $container->addCompilerPass(new AttributeEntityCompilerPass(new AttributeEntityCompiler()), PassConfig::TYPE_BEFORE_OPTIMIZATION, 99);
@@ -145,6 +115,56 @@ class Framework extends Bundle
 
         parent::build($container);
         $this->buildDefaultConfig($container);
+    }
+
+    /**
+     * @throws \ReflectionException
+     * @throws \Exception
+     */
+    public function loadSWServices(ContainerBuilder $container): void
+    {
+        $frameworkFolder = Helper::getFolderByClassName(SWFramework::class, 'framework');
+        $loader = new XmlFileLoader($container, new FileLocator($frameworkFolder.'/DependencyInjection/'));
+
+        $loader->load('acl.xml');
+        $loader->load('custom-field.xml');
+        $loader->load('data-abstraction-layer.xml');
+        $loader->load('event.xml');
+        $loader->load('hydrator.xml');
+        $loader->load('message-queue.xml');
+        $loader->load('rule.xml');
+        $loader->load('scheduled-task.xml');
+        $loader->load('language.xml');
+//        $loader->load('seo.xml');
+        $loader->load('rate-limiter.xml');
+        $loader->load('increment.xml');
+        $loader->load('flag.xml');
+        $loader->load('health.xml');
+        $loader->load('telemetry.xml');
+        $loader->load('notification.xml');
+        $loader->load('sso.xml');
+
+        if ($container->getParameter('kernel.environment') === 'test') {
+            $loader->load('services_test.xml');
+            $loader->load('store_test.xml');
+            $loader->load('seo_test.xml');
+            $loader->load('app_test.xml');
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function loadMuWaServices(ContainerBuilder $container): void
+    {
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/DependencyInjection/'));
+        $loader->load('api.xml');
+        $loader->load('cache.xml');
+        $loader->load('filesystem.xml');
+        $loader->load('plugin.xml');
+        $loader->load('script.xml');
+        $loader->load('services.xml');
+        $loader->load('webhook.xml');
     }
     public function boot(): void
     {

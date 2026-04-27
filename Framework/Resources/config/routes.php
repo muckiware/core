@@ -7,9 +7,9 @@
  * @author     Muckiware
  *
  */
-use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
+
 use Shopware\Core\Framework\Framework;
-use Muckiware\Core\Framework\Helper;
+use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 return function (RoutingConfigurator $routes): void {
 

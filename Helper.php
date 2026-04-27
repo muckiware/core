@@ -7,14 +7,13 @@
  * @author     Muckiware
  *
  */
-namespace Muckiware\Core\Framework;
-
+namespace Muckiware\Core;
 class Helper
 {
     /**
      * @throws \ReflectionException
      */
-    public static function getProjectFolder(string|null $className=null, string $targetFolder='/vendor'): string
+    public static function getFolderByClassName(string|null $className=null, string $targetFolder='/vendor'): string
     {
         if ($folder = $_ENV['PROJECT_ROOT'] ?? $_SERVER['PROJECT_ROOT'] ?? false) {
             return $folder;

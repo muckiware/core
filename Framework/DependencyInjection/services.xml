@@ -167,13 +167,6 @@ frame-ancestors 'none';
             <tag name="console.command"/>
         </service>
 
-        <service id="Shopware\Core\Framework\Demodata\PersonalData\CleanPersonalDataCommand">
-            <argument type="service" id="Doctrine\DBAL\Connection"/>
-            <argument type="service" id="customer.repository"/>
-
-            <tag name="console.command"/>
-        </service>
-
         <service id="Shopware\Core\Framework\Migration\Command\MigrationDestructiveCommand">
             <argument type="service" id="Shopware\Core\Framework\Migration\MigrationCollectionLoader"/>
             <argument type="service" id="cache.object"/>
@@ -248,13 +241,13 @@ frame-ancestors 'none';
             <argument type="service" id="Shopware\Core\System\CustomEntity\Xml\Config\AdminUi\AdminUiXmlSchemaValidator"/>
         </service>
 
-        <service id="Shopware\Core\System\CustomEntity\CustomEntityLifecycleService">
-            <argument type="service" id="Shopware\Core\System\CustomEntity\Schema\CustomEntityPersister"/>
-            <argument type="service" id="Shopware\Core\System\CustomEntity\Schema\CustomEntitySchemaUpdater"/>
-            <argument type="service" id="Shopware\Core\System\CustomEntity\Xml\Config\CustomEntityEnrichmentService"/>
-            <argument type="service" id="Shopware\Core\System\CustomEntity\Xml\CustomEntityXmlSchemaValidator"/>
-            <argument type="service" id="Shopware\Core\Framework\App\Source\SourceResolver"/>
-        </service>
+<!--        <service id="Muckiware\Core\System\CustomEntity\CustomEntityLifecycleService">-->
+<!--            <argument type="service" id="Shopware\Core\System\CustomEntity\Schema\CustomEntityPersister"/>-->
+<!--            <argument type="service" id="Shopware\Core\System\CustomEntity\Schema\CustomEntitySchemaUpdater"/>-->
+<!--            <argument type="service" id="Shopware\Core\System\CustomEntity\Xml\Config\CustomEntityEnrichmentService"/>-->
+<!--            <argument type="service" id="Shopware\Core\System\CustomEntity\Xml\CustomEntityXmlSchemaValidator"/>-->
+<!--            <argument type="service" id="Shopware\Core\Framework\App\Source\SourceResolver"/>-->
+<!--        </service>-->
 
         <!-- Translation -->
         <service id="Shopware\Core\Framework\Adapter\Translation\Translator" decorates="translator">
@@ -292,11 +285,11 @@ frame-ancestors 'none';
             </call>
         </service>
 
-        <service id="Shopware\Core\System\Snippet\Files\SnippetFileLoader">
+        <service id="Muckiware\Core\System\Snippet\Files\SnippetFileLoader">
             <argument type="service" id="Symfony\Component\HttpKernel\KernelInterface"/>
             <argument type="service" id="Doctrine\DBAL\Connection"/>
-            <argument type="service" id="Shopware\Core\System\Snippet\Files\AppSnippetFileLoader"/>
-            <argument type="service" id="Shopware\Core\Framework\App\ActiveAppsLoader"/>
+<!--            <argument type="service" id="Shopware\Core\System\Snippet\Files\AppSnippetFileLoader"/>-->
+<!--            <argument type="service" id="Shopware\Core\Framework\App\ActiveAppsLoader"/>-->
             <argument type="service" id="Shopware\Core\System\Snippet\Struct\TranslationConfig"/>
             <argument type="service" id="Shopware\Core\System\Snippet\Service\TranslationLoader"/>
             <argument type="service" id="shopware.filesystem.private"/>
@@ -312,7 +305,7 @@ frame-ancestors 'none';
         </service>
 
         <service id="Shopware\Core\System\Snippet\Files\SnippetFileCollectionFactory">
-            <argument type="service" id="Shopware\Core\System\Snippet\Files\SnippetFileLoader"/>
+            <argument type="service" id="Muckiware\Core\System\Snippet\Files\SnippetFileLoader"/>
         </service>
 
         <service id="Shopware\Core\System\Snippet\Filter\SnippetFilterFactory" public="true">
@@ -419,10 +412,10 @@ frame-ancestors 'none';
             <tag name="twig.extension"/>
         </service>
 
-        <service id="Shopware\Core\Framework\Adapter\Twig\Filter\CurrencyFilter">
-            <argument type="service" id="Shopware\Core\System\Currency\CurrencyFormatter"/>
-            <tag name="twig.extension"/>
-        </service>
+<!--        <service id="Shopware\Core\Framework\Adapter\Twig\Filter\CurrencyFilter">-->
+<!--            <argument type="service" id="Shopware\Core\System\Currency\CurrencyFormatter"/>-->
+<!--            <tag name="twig.extension"/>-->
+<!--        </service>-->
 
         <service id="Shopware\Core\Framework\Adapter\Twig\Filter\EmailIdnTwigFilter">
             <tag name="twig.extension"/>
@@ -460,10 +453,10 @@ frame-ancestors 'none';
             <tag name="shopware.app_script.twig.extension"/>
         </service>
 
-        <service id="Shopware\Core\Framework\Adapter\Twig\Extension\InAppPurchaseExtension">
-            <argument type="service" id="Shopware\Core\Framework\Store\InAppPurchase"/>
-            <tag name="twig.extension"/>
-        </service>
+<!--        <service id="Shopware\Core\Framework\Adapter\Twig\Extension\InAppPurchaseExtension">-->
+<!--            <argument type="service" id="Shopware\Core\Framework\Store\InAppPurchase"/>-->
+<!--            <tag name="twig.extension"/>-->
+<!--        </service>-->
 
         <service id="Shopware\Core\Framework\Adapter\Twig\StringTemplateRenderer">
             <argument type="service" id="twig"/>
@@ -486,12 +479,10 @@ frame-ancestors 'none';
             <tag name="kernel.reset" method="reset"/>
         </service>
 
-        <service id="Shopware\Core\Framework\Adapter\Twig\AppTemplateIterator"
-                 decorates="twig.template_iterator"
-                 public="true">
-            <argument type="service" id="Shopware\Core\Framework\Adapter\Twig\AppTemplateIterator.inner"/>
-            <argument type="service" id="app_template.repository"/>
-        </service>
+<!--        <service id="Shopware\Core\Framework\Adapter\Twig\AppTemplateIterator" decorates="twig.template_iterator" public="true">-->
+<!--            <argument type="service" id="Shopware\Core\Framework\Adapter\Twig\AppTemplateIterator.inner"/>-->
+<!--            <argument type="service" id="app_template.repository"/>-->
+<!--        </service>-->
 
         <service id="Shopware\Core\Framework\Adapter\Twig\TwigVariableParserFactory"/>
 
@@ -507,27 +498,27 @@ frame-ancestors 'none';
             <argument type="service" id="Shopware\Core\Framework\Routing\RouteScopeRegistry"/>
         </service>
 
-        <service id="Shopware\Core\Checkout\Cart\ApiOrderCartService">
-            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>
-            <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextPersister"/>
-        </service>
+<!--        <service id="Shopware\Core\Checkout\Cart\ApiOrderCartService">-->
+<!--            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>-->
+<!--            <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextPersister"/>-->
+<!--        </service>-->
 
-        <service id="Shopware\Core\Framework\Api\Controller\SalesChannelProxyController" public="true">
-            <argument type="service" id="kernel"/>
-            <argument type="service" id="sales_channel.repository"/>
-            <argument type="service" id="Shopware\Core\Framework\Validation\DataValidator"/>
-            <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextPersister"/>
-            <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextService"/>
-            <argument type="service" id="event_dispatcher"/>
-            <argument type="service" id="Shopware\Core\Checkout\Cart\ApiOrderCartService"/>
-            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute"/>
-            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>
-            <argument type="service" id="request_stack"/>
-            <argument type="service" id="Shopware\Core\Checkout\Customer\ImitateCustomerTokenGenerator"/>
-            <call method="setContainer">
-                <argument type="service" id="service_container"/>
-            </call>
-        </service>
+<!--        <service id="Shopware\Core\Framework\Api\Controller\SalesChannelProxyController" public="true">-->
+<!--            <argument type="service" id="kernel"/>-->
+<!--            <argument type="service" id="sales_channel.repository"/>-->
+<!--            <argument type="service" id="Shopware\Core\Framework\Validation\DataValidator"/>-->
+<!--            <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextPersister"/>-->
+<!--            <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextService"/>-->
+<!--            <argument type="service" id="event_dispatcher"/>-->
+<!--            <argument type="service" id="Shopware\Core\Checkout\Cart\ApiOrderCartService"/>-->
+<!--            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute"/>-->
+<!--            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>-->
+<!--            <argument type="service" id="request_stack"/>-->
+<!--            <argument type="service" id="Shopware\Core\Checkout\Customer\ImitateCustomerTokenGenerator"/>-->
+<!--            <call method="setContainer">-->
+<!--                <argument type="service" id="service_container"/>-->
+<!--            </call>-->
+<!--        </service>-->
 
         <service id="Shopware\Core\Framework\Routing\RouteScope">
             <tag name="shopware.route_scope"/>
