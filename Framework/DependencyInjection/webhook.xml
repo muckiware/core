@@ -4,25 +4,12 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
-        <service id="Shopware\Core\Framework\Webhook\WebhookDispatcher" decorates="event_dispatcher"
-                 decoration-priority="100">
-            <argument type="service" id="Shopware\Core\Framework\Webhook\WebhookDispatcher.inner"/>
-            <argument type="service"  id="Muckiware\Core\Framework\Webhook\Service\WebhookManager" />
-        </service>
+        <!-- WebhookDispatcher and WebhookCacheClearer omitted: webhook dispatching not needed
+             on this non-webshop platform (no external App ecosystem). Webhook entities are
+             still managed via admin. -->
 
         <service id="Shopware\Core\Framework\Webhook\Service\WebhookLoader">
             <argument type="service" id="Doctrine\DBAL\Connection"/>
-        </service>
-
-        <service lazy="true" id="Muckiware\Core\Framework\Webhook\Service\WebhookManager">
-            <argument type="service" id="Shopware\Core\Framework\Webhook\Service\WebhookLoader"/>
-        </service>
-
-        <service id="Shopware\Core\Framework\Webhook\WebhookCacheClearer">
-            <argument type="service" id="Muckiware\Core\Framework\Webhook\Service\WebhookManager"/>
-
-            <tag name="kernel.event_subscriber"/>
-            <tag name="kernel.reset" method="reset"/>
         </service>
 
         <service id="Shopware\Core\Framework\Webhook\Hookable\HookableEventFactory" lazy="true">

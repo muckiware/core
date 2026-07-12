@@ -49,10 +49,10 @@ class Content extends Bundle
         $loader->load('media.xml');
         $loader->load('media_path.xml');
         $loader->load('property.xml');
-        $loader->load('cms.xml');
-        $loader->load('mail_template.xml');
-        $loader->load('sitemap.xml');
-        $loader->load('flow.xml');
+        // cms.xml not loaded from SW Core: depends on sales_channel.product.repository (no Checkout bundle)
+        // mail_template.xml not loaded from SW Core: MailAttachmentsBuilder depends on DocumentGenerator (no Checkout bundle)
+        // sitemap.xml not loaded: depends on CartRuleLoader and SalesChannelContextFactory (no Checkout bundle)
+        // flow.xml not loaded from SW Core: FlowRuleScopeBuilder/FlowExecutor depend on Checkout services
 
         if ($container->getParameter('kernel.environment') === 'test') {
             $loader->load('media_test.xml');
@@ -65,6 +65,10 @@ class Content extends Bundle
     public function loadMuWaServices(ContainerBuilder $container): void
     {
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/DependencyInjection/'));
+        $loader->load('category.xml');
+        $loader->load('cms.xml');
+        $loader->load('flow.xml');
+        $loader->load('mail_template.xml');
         $loader->load('rule.xml');
     }
 }

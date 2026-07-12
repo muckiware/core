@@ -16,6 +16,7 @@ use Shopware\Core\Framework\Adapter\Cache\StampedeProtectionConfigurator;
 use Shopware\Core\Framework\Adapter\Redis\RedisConnectionsCompilerPass;
 use Shopware\Core\Framework\Bundle;
 use Shopware\Core\Framework\DataAbstractionLayer\AttributeEntityCompiler;
+use Muckiware\Core\Framework\DependencyInjection\CompilerPass\RemoveCheckoutDependentServicesPass;
 use Shopware\Core\Framework\DependencyInjection\CompilerPass\AssetBundleRegistrationCompilerPass;
 use Shopware\Core\Framework\DependencyInjection\CompilerPass\AssetRegistrationCompilerPass;
 use Shopware\Core\Framework\DependencyInjection\CompilerPass\AttributeEntityCompilerPass;
@@ -112,6 +113,9 @@ class Framework extends Bundle
         }
 
         $container->addCompilerPass(new FrameworkMigrationReplacementCompilerPass());
+        // Runs at TYPE_BEFORE_REMOVING (after bundle build), removes services that depend on
+        // missing Checkout bundle services before Symfony's validation pass fires.
+        $container->addCompilerPass(new RemoveCheckoutDependentServicesPass(), PassConfig::TYPE_BEFORE_REMOVING, 100);
 
         parent::build($container);
         $this->buildDefaultConfig($container);

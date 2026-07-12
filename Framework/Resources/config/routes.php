@@ -8,12 +8,13 @@
  *
  */
 
+use Muckiware\Core\Helper;
 use Shopware\Core\Framework\Framework;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 return function (RoutingConfigurator $routes): void {
 
-    $frameworkDir = Helper::getProjectFolder(Framework::class, 'framework');
+    $frameworkDir = Helper::getFolderByClassName(Framework::class, 'framework');
 
     $routes->import($frameworkDir.'/Api/Controller/**/*Controller.php', 'attribute');
     $routes->import($frameworkDir.'/Plugin/**/*Controller.php', 'attribute');

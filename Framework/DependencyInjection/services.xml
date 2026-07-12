@@ -491,12 +491,7 @@ frame-ancestors 'none';
             <argument type="service" id="Shopware\Core\Framework\Routing\RouteScopeRegistry"/>
         </service>
 
-        <service id="Shopware\Core\Framework\Routing\SalesChannelRequestContextResolver" decorates="Muckiware\Core\Framework\Routing\ApiRequestContextResolver">
-            <argument type="service" id="Shopware\Core\Framework\Routing\SalesChannelRequestContextResolver.inner"/>
-            <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextService"/>
-            <argument type="service" id="event_dispatcher"/>
-            <argument type="service" id="Shopware\Core\Framework\Routing\RouteScopeRegistry"/>
-        </service>
+        <!-- Removed: SalesChannelRequestContextResolver — depends on SalesChannelContextService (no Checkout bundle) -->
 
 <!--        <service id="Shopware\Core\Checkout\Cart\ApiOrderCartService">-->
 <!--            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>-->
