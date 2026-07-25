@@ -48,6 +48,7 @@ class Content extends Bundle
         $loader->load('cookie.xml');
         $loader->load('media.xml');
         $loader->load('media_path.xml');
+        $loader->load('measurement_system.xml');
         $loader->load('property.xml');
         // cms.xml not loaded from SW Core: depends on sales_channel.product.repository (no Checkout bundle)
         // mail_template.xml not loaded from SW Core: MailAttachmentsBuilder depends on DocumentGenerator (no Checkout bundle)
@@ -70,5 +71,9 @@ class Content extends Bundle
         $loader->load('flow.xml');
         $loader->load('mail_template.xml');
         $loader->load('rule.xml');
+        // registers ProductSearchConfigDefinition + ProductSearchKeywordDefinition
+        // required by LanguageDefinition associations — without it the DAL registry throws
+        // DefinitionNotFoundException on the first language repository query.
+        $loader->load('product-search.xml');
     }
 }

@@ -60,6 +60,7 @@ class System extends Bundle
         $configLocator = new FileLocator($systemDir.'/DependencyInjection/');
 
         $loader = new XmlFileLoader($container, $configLocator);
+        $loader->load('configuration.xml');
         $loader->load('country.xml');
         $loader->load('custom_entity.xml');
         $loader->load('locale.xml');
@@ -76,6 +77,7 @@ class System extends Bundle
         $loader->load('configuration.xml');
         $loader->load('sales_channel.xml');
         $loader->load('snippet.xml');
+        $loader->load('tax_provider.xml');
         $loader->load('user.xml');
     }
 

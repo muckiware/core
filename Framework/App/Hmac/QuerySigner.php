@@ -2,54 +2,16 @@
 
 namespace Muckiware\Core\Framework\App\Hmac;
 
-use GuzzleHttp\Psr7\Uri;
-use Psr\Http\Message\UriInterface;
-use Shopware\Core\Framework\Api\Context\AdminApiSource;
-use Shopware\Core\Framework\App\AppEntity;
-use Shopware\Core\Framework\App\AppException;
-use Shopware\Core\Framework\App\Hmac\Guzzle\AuthMiddleware;
-use Shopware\Core\Framework\App\ShopId\ShopIdProvider;
-use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\App\Hmac\QuerySigner as ShopwareQuerySigner;
 use Shopware\Core\Framework\Log\Package;
-use Shopware\Core\Framework\Store\Authentication\LocaleProvider;
-use Shopware\Core\Framework\App\Hmac\RequestSigner;
 
 /**
  * @internal only for use by the app-system
+ *
+ * Extends the Shopware base class so this type satisfies type checks in
+ * ModuleLoader and other services that expect the Shopware parent class.
  */
 #[Package('framework')]
-class QuerySigner
+class QuerySigner extends ShopwareQuerySigner
 {
-    public function __construct(
-        private readonly string $shopUrl,
-        private readonly string $shopwareVersion,
-        private readonly LocaleProvider $localeProvider,
-        private readonly ShopIdProvider $shopIdProvider
-    ) {
-    }
-
-    public function signUri(string $uri, AppEntity $app, Context $context): UriInterface
-    {
-        $secret = $app->getAppSecret();
-        if ($secret === null) {
-            throw AppException::appSecretMissing($app->getName());
-        }
-
-        $unsignedUri = Uri::withQueryValues(new Uri($uri), [
-            'shop-id' => $this->shopIdProvider->getShopId(),
-            'shop-url' => $this->shopUrl,
-            'timestamp' => (string) (new \DateTime())->getTimestamp(),
-            'sw-version' => $this->shopwareVersion,
-            'app-version' => $app->getVersion(),
-            AuthMiddleware::SHOPWARE_CONTEXT_LANGUAGE => $context->getLanguageId(),
-            AuthMiddleware::SHOPWARE_USER_LANGUAGE => $this->localeProvider->getLocaleFromContext($context),
-            'sw-user-id' => $context->getSource() instanceof AdminApiSource ? ($context->getSource()->getUserId() ?? '') : '',
-        ]);
-
-        return Uri::withQueryValue(
-            $unsignedUri,
-            'shopware-shop-signature',
-            (new RequestSigner())->signPayload($unsignedUri->getQuery(), $secret)
-        );
-    }
 }

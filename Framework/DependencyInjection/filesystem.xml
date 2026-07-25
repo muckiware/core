@@ -88,7 +88,10 @@
             <argument type="service" id="cache.object"/>
         </service>
 
-        <service id="shopware.asset.asset" class="Shopware\Core\Framework\Adapter\Asset\FallbackUrlPackage" lazy="true">
+        <!-- public="true" prevents Symfony from inlining this service during TYPE_OPTIMIZE
+             so it remains visible to RemoveCheckoutDependentServicesPass and is correctly
+             registered as the named "asset" package via the tagged iterator in assets.packages. -->
+        <service id="shopware.asset.asset" class="Shopware\Core\Framework\Adapter\Asset\FallbackUrlPackage" lazy="true" public="true">
             <argument type="collection">
                 <argument>%shopware.filesystem.asset.url%</argument>
             </argument>

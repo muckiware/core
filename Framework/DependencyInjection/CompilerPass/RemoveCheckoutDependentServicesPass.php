@@ -29,12 +29,20 @@ class RemoveCheckoutDependentServicesPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
+        // Capture service IDs already removed by Symfony's optimization passes (e.g. inlined by
+        // InlineServiceDefinitionsPass at TYPE_OPTIMIZE). These must NOT be treated as "genuinely
+        // missing" — they were legitimately registered and merely optimized away. Without this
+        // snapshot, method calls referencing inlined services (e.g. assets.packages::setDefaultPackage
+        // referencing shopware.asset.asset) would be incorrectly stripped by cleanupOptionalReferences,
+        // causing runtime errors like "There is no 'asset' asset package".
+        $preInlinedIds = $container->getRemovedIds();
+
         do {
             // Clean optional collection arguments (IteratorArgument, ServiceLocatorArgument, method calls)
-            $this->cleanupOptionalReferences($container);
+            $this->cleanupOptionalReferences($container, $preInlinedIds);
 
             // Remove services with missing REQUIRED dependencies.
-            $removedIds = $this->removeServicesWithMissingRequiredDeps($container);
+            $removedIds = $this->removeServicesWithMissingRequiredDeps($container, $preInlinedIds);
         } while ($removedIds !== []);
 
         // After all removals: clean up env-var placeholders no longer referenced by any service.
@@ -42,9 +50,22 @@ class RemoveCheckoutDependentServicesPass implements CompilerPassInterface
     }
 
     /**
+     * Returns true when a service is genuinely absent (never registered, or is a Checkout service).
+     * Returns false for services that were inlined by Symfony's optimization passes — those are
+     * still "available", just merged into their sole usage site.
+     *
+     * @param array<string, true> $preInlinedIds snapshot from before this pass ran
+     */
+    private function isGenuinelyMissing(string $id, ContainerBuilder $container, array $preInlinedIds): bool
+    {
+        return !$container->has($id) && !isset($preInlinedIds[$id]);
+    }
+
+    /**
+     * @param array<string, true> $preInlinedIds
      * @return list<string> service IDs removed
      */
-    private function removeServicesWithMissingRequiredDeps(ContainerBuilder $container): array
+    private function removeServicesWithMissingRequiredDeps(ContainerBuilder $container, array $preInlinedIds): array
     {
         $removed = [];
 
@@ -54,7 +75,7 @@ class RemoveCheckoutDependentServicesPass implements CompilerPassInterface
             }
 
             foreach ($this->extractRequiredReferences($definition->getArguments()) as $referencedId) {
-                if (!$container->has($referencedId)) {
+                if ($this->isGenuinelyMissing($referencedId, $container, $preInlinedIds)) {
                     $container->removeDefinition($id);
                     $removed[] = $id;
                     break;
@@ -67,21 +88,23 @@ class RemoveCheckoutDependentServicesPass implements CompilerPassInterface
 
     /**
      * Filter stale references from optional collections and method-call arguments.
+     *
+     * @param array<string, true> $preInlinedIds
      */
-    private function cleanupOptionalReferences(ContainerBuilder $container): void
+    private function cleanupOptionalReferences(ContainerBuilder $container, array $preInlinedIds): void
     {
         foreach ($container->getDefinitions() as $definition) {
             $definition->setArguments(
-                $this->filterOptionalArguments($definition->getArguments(), $container)
+                $this->filterOptionalArguments($definition->getArguments(), $container, $preInlinedIds)
             );
 
-            // Filter method-call arguments: remove calls that reference a missing service.
+            // Filter method-call arguments: remove calls that reference a genuinely missing service.
             $filteredMethodCalls = [];
             foreach ($definition->getMethodCalls() as $call) {
                 $args = $call[1];
                 $hasStaleRef = false;
                 foreach ($this->flattenReferences($args) as $ref) {
-                    if (!$container->has((string) $ref)) {
+                    if ($this->isGenuinelyMissing((string) $ref, $container, $preInlinedIds)) {
                         $hasStaleRef = true;
                         break;
                     }
@@ -195,29 +218,34 @@ class RemoveCheckoutDependentServicesPass implements CompilerPassInterface
 
     /**
      * @param array<mixed> $arguments
+     * @param array<string, true> $preInlinedIds
      * @return array<mixed>
      */
-    private function filterOptionalArguments(array $arguments, ContainerBuilder $container): array
+    private function filterOptionalArguments(array $arguments, ContainerBuilder $container, array $preInlinedIds): array
     {
         $result = [];
 
         foreach ($arguments as $key => $argument) {
             if ($argument instanceof IteratorArgument) {
-                $filtered = array_values(array_filter(
+                // Do NOT use array_values() — the IteratorArgument is keyed by tag attribute
+                // (e.g. 'asset', 'sitemap', 'public' for tagged_iterator('assets.package', 'package')).
+                // array_values() would replace those string keys with 0, 1, 2…, breaking
+                // Packages::addPackage($name, $pkg) which uses the key as the package name.
+                $filtered = array_filter(
                     $argument->getValues(),
-                    static fn ($v) => !($v instanceof Reference) || $container->has((string) $v)
-                ));
+                    fn ($v) => !($v instanceof Reference) || !$this->isGenuinelyMissing((string) $v, $container, $preInlinedIds)
+                );
                 $result[$key] = new IteratorArgument($filtered);
             } elseif ($argument instanceof ServiceLocatorArgument) {
                 $values = $argument->getValues();
                 foreach ($values as $k => $v) {
-                    if ($v instanceof Reference && !$container->has((string) $v)) {
+                    if ($v instanceof Reference && $this->isGenuinelyMissing((string) $v, $container, $preInlinedIds)) {
                         unset($values[$k]);
                     }
                 }
                 $result[$key] = new ServiceLocatorArgument($values);
             } elseif (is_array($argument)) {
-                $result[$key] = $this->filterOptionalArguments($argument, $container);
+                $result[$key] = $this->filterOptionalArguments($argument, $container, $preInlinedIds);
             } else {
                 $result[$key] = $argument;
             }

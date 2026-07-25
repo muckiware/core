@@ -5,8 +5,15 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="Muckiware\Core\Framework\Script\Execution\ScriptLoader">
+        <!-- No-op stub: Muckidrive does not use the app system, but SW's ScriptLoader
+             requires ScriptPersister in its constructor. refresh() is only called in
+             debug mode; all other methods are app-lifecycle hooks we never trigger. -->
+        <service id="Shopware\Core\Framework\App\Lifecycle\Persister\ScriptPersister"
+                 class="Muckiware\Core\Framework\Script\Execution\NullScriptPersister"/>
+
+        <service id="Shopware\Core\Framework\Script\Execution\ScriptLoader">
             <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Shopware\Core\Framework\App\Lifecycle\Persister\ScriptPersister"/>
             <argument type="service" id="cache.object"/>
             <argument>%twig.cache%</argument>
             <argument>%kernel.debug%</argument>
@@ -15,7 +22,7 @@
         </service>
 
         <service id="Shopware\Core\Framework\Script\Execution\ScriptExecutor" public="true">
-            <argument type="service" id="Muckiware\Core\Framework\Script\Execution\ScriptLoader"/>
+            <argument type="service" id="Shopware\Core\Framework\Script\Execution\ScriptLoader"/>
             <argument type="service" id="Shopware\Core\Framework\Script\Debugging\ScriptTraces"/>
             <argument type="service" id="service_container"/>
             <argument type="service" id="Shopware\Core\Framework\Script\Execution\ScriptEnvironmentFactory"/>
@@ -47,7 +54,7 @@
 
         <service id="Shopware\Core\Framework\Script\Api\ScriptApiRoute" public="true">
             <argument type="service" id="Shopware\Core\Framework\Script\Execution\ScriptExecutor"/>
-            <argument type="service" id="Muckiware\Core\Framework\Script\Execution\ScriptLoader"/>
+            <argument type="service" id="Shopware\Core\Framework\Script\Execution\ScriptLoader"/>
             <argument type="service" id="Shopware\Core\Framework\Script\Api\ScriptResponseEncoder"/>
         </service>
 

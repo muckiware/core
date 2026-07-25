@@ -2,139 +2,16 @@
 
 namespace Muckiware\Core\Framework\App\Payload;
 
-use Shopware\Core\Framework\Api\Serializer\JsonEntityEncoder;
-use Shopware\Core\Framework\App\AppEntity;
-use Shopware\Core\Framework\App\AppException;
-use Shopware\Core\Framework\App\Exception\ShopIdChangeSuggestedException;
-use Shopware\Core\Framework\App\Hmac\Guzzle\AuthMiddleware;
-use Shopware\Core\Framework\App\ShopId\ShopIdProvider;
-use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\DefinitionInstanceRegistry;
-use Shopware\Core\Framework\DataAbstractionLayer\Entity;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\App\Payload\AppPayloadServiceHelper as ShopwareAppPayloadServiceHelper;
 use Shopware\Core\Framework\Log\Package;
-use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\Framework\App\Payload\Source;
-use Shopware\Core\Framework\App\Payload\AppPayloadStruct;
-use Shopware\Core\Framework\App\Payload\SourcedPayloadInterface;
 
 /**
  * @internal only for use by the app-system
+ *
+ * Extends the Shopware base class so this type satisfies type checks in
+ * AppActionLoader and other services that expect the Shopware parent class.
  */
 #[Package('framework')]
-class AppPayloadServiceHelper
+class AppPayloadServiceHelper extends ShopwareAppPayloadServiceHelper
 {
-    /**
-     * @internal
-     */
-    public function __construct(
-        private readonly DefinitionInstanceRegistry $definitionRegistry,
-        private readonly JsonEntityEncoder $entityEncoder,
-        private readonly ShopIdProvider $shopIdProvider,
-        private readonly string $shopUrl,
-    ) {
-    }
-
-    /**
-     * @throws ShopIdChangeSuggestedException
-     */
-    public function buildSource(string $appVersion, string $appName): Source
-    {
-        return new Source(
-            $this->shopUrl,
-            $this->shopIdProvider->getShopId(),
-            $appVersion,
-            null
-        );
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function encode(SourcedPayloadInterface $payload): array
-    {
-        $array = $payload->jsonSerialize();
-
-        foreach ($array as $propertyName => $property) {
-            if ($property instanceof SalesChannelContext) {
-                $array[$propertyName] = $this->encodeSalesChannelContext($property);
-            } elseif ($property instanceof Entity) {
-                $array[$propertyName] = $this->encodeEntity($property);
-            } elseif ($property instanceof RequestDataBag) {
-                $array[$propertyName] = $property->all();
-            }
-        }
-
-        return $array;
-    }
-
-    /**
-     * @param array{timeout?: int} $additionalOptions
-     * @throws \JsonException
-     */
-    public function createRequestOptions(
-        SourcedPayloadInterface $payload,
-        AppEntity $app,
-        Context $context,
-        array $additionalOptions = []
-    ): AppPayloadStruct {
-        if (!$app->getAppSecret()) {
-            throw AppException::registrationFailed($app->getName(), 'App secret is missing');
-        }
-
-        $defaultOptions = [
-            AuthMiddleware::APP_REQUEST_CONTEXT => $context,
-            AuthMiddleware::APP_REQUEST_TYPE => [
-                AuthMiddleware::APP_SECRET => $app->getAppSecret(),
-                AuthMiddleware::VALIDATED_RESPONSE => true,
-            ],
-            'headers' => ['Content-Type' => 'application/json'],
-            'body' => $this->buildPayload($payload, $app),
-        ];
-
-        return new AppPayloadStruct(\array_merge($defaultOptions, $additionalOptions));
-    }
-
-    /**
-     * @throws \JsonException
-     */
-    private function buildPayload(SourcedPayloadInterface $payload, AppEntity $app): string
-    {
-        $payload->setSource($this->buildSource($app->getVersion(), $app->getName()));
-        $encoded = $this->encode($payload);
-
-        return \json_encode($encoded, \JSON_THROW_ON_ERROR);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function encodeEntity(Entity $entity): array
-    {
-        $definition = $this->definitionRegistry->getByEntityName($entity->getApiAlias());
-
-        return $this->entityEncoder->encode(
-            new Criteria(),
-            $definition,
-            $entity,
-            '/api'
-        );
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function encodeSalesChannelContext(SalesChannelContext $salesChannelContext): array
-    {
-        $array = $salesChannelContext->jsonSerialize();
-
-        foreach ($array as $propertyName => $property) {
-            if ($property instanceof Entity) {
-                $array[$propertyName] = $this->encodeEntity($property);
-            }
-        }
-
-        return $array;
-    }
 }

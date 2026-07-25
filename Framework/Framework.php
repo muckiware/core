@@ -16,6 +16,7 @@ use Shopware\Core\Framework\Adapter\Cache\StampedeProtectionConfigurator;
 use Shopware\Core\Framework\Adapter\Redis\RedisConnectionsCompilerPass;
 use Shopware\Core\Framework\Bundle;
 use Shopware\Core\Framework\DataAbstractionLayer\AttributeEntityCompiler;
+use Muckiware\Core\Framework\DependencyInjection\CompilerPass\LenientDefinitionRegistryPass;
 use Muckiware\Core\Framework\DependencyInjection\CompilerPass\RemoveCheckoutDependentServicesPass;
 use Shopware\Core\Framework\DependencyInjection\CompilerPass\AssetBundleRegistrationCompilerPass;
 use Shopware\Core\Framework\DependencyInjection\CompilerPass\AssetRegistrationCompilerPass;
@@ -113,6 +114,10 @@ class Framework extends Bundle
         }
 
         $container->addCompilerPass(new FrameworkMigrationReplacementCompilerPass());
+        // Replaces DefinitionInstanceRegistry class so missing entity definitions (Checkout etc.)
+        // resolve to ghost stubs instead of throwing DefinitionNotFoundException.
+        // Must run before EntityCompilerPass (priority 0 at TYPE_BEFORE_OPTIMIZATION).
+        $container->addCompilerPass(new LenientDefinitionRegistryPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 50);
         // Runs at TYPE_BEFORE_REMOVING (after bundle build), removes services that depend on
         // missing Checkout bundle services before Symfony's validation pass fires.
         $container->addCompilerPass(new RemoveCheckoutDependentServicesPass(), PassConfig::TYPE_BEFORE_REMOVING, 100);
@@ -163,8 +168,10 @@ class Framework extends Bundle
     {
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/DependencyInjection/'));
         $loader->load('api.xml');
+        $loader->load('app.xml');
         $loader->load('cache.xml');
         $loader->load('filesystem.xml');
+        $loader->load('in-app-purchase.xml');
         $loader->load('plugin.xml');
         $loader->load('script.xml');
         $loader->load('services.xml');
