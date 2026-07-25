@@ -23,7 +23,7 @@
 
         <!--
             UserRecoveryService removed: depends on SalesChannelContextService (no Checkout bundle).
-            Admin user recovery via SalesChannel email templates is not applicable in a non-storefront context.
+            Admin user recovery via SalesChannel email templates is not applicable in a non-frontend context.
         -->
 
         <service id="Shopware\Core\System\User\Api\UserRecoveryController" public="true">

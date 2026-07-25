@@ -19,7 +19,7 @@ use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Finder\Finder;
 
 /**
- * @description Loads storefront snippet files from the core, plugins, and apps into a SnippetFileCollection.
+ * @description Loads frontend snippet files from the core, plugins, and apps into a SnippetFileCollection.
  */
 #[Package('discovery')]
 class SnippetFileLoader implements SnippetFileLoaderInterface
@@ -146,7 +146,7 @@ class SnippetFileLoader implements SnippetFileLoaderInterface
         }
 
         foreach ($this->kernel->getBundles() as $name => $bundle) {
-            // skip Administration bundle because we are in the storefront scope
+            // skip Administration bundle because we are in the frontend scope
             if (!$bundle instanceof Bundle || $name === self::ADMINISTRATION_BUNDLE_NAME) {
                 continue;
             }

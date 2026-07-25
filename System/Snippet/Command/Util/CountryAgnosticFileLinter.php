@@ -27,7 +27,7 @@ class CountryAgnosticFileLinter
     public const PLATFORM_DOMAIN_LABELS = [
         'administration' => 'Administration',
         'messages' => 'Base',
-        'storefront' => 'Storefront',
+        'storefront' => 'Frontend',
     ];
 
     /**
