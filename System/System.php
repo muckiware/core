@@ -62,6 +62,7 @@ class System extends Bundle
         $loader = new XmlFileLoader($container, $configLocator);
         $loader->load('configuration.xml');
         $loader->load('country.xml');
+        $loader->load('currency.xml');
         $loader->load('custom_entity.xml');
         $loader->load('locale.xml');
         $loader->load('integration.xml');

@@ -10,6 +10,10 @@
             <tag name="shopware.entity.hookable"/>
         </service>
 
+        <service id="Muckiware\Core\System\SalesChannel\FrontendDefinition">
+            <tag name="shopware.entity.definition"/>
+        </service>
+
         <service id="Shopware\Core\System\SalesChannel\Aggregate\SalesChannelTranslation\SalesChannelTranslationDefinition">
             <tag name="shopware.entity.definition"/>
         </service>
