@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <!--
+        Minimal product-search entity definitions required by LanguageDefinition:
+          - OneToOneAssociationField  'productSearchConfig'    -> ProductSearchConfigDefinition
+          - OneToManyAssociationField 'productSearchKeywords'  -> ProductSearchKeywordDefinition
+
+        Without these, the DAL DefinitionInstanceRegistry throws DefinitionNotFoundException
+        on the first language repository query (e.g. /api/_admin/locales).
+
+        Full product.xml is intentionally NOT loaded — it pulls in SalesChannel services
+        (e.g. ResolveCriteriaProductListingRoute) that are unavailable on Muckidrive.
+    -->
+
+    <services>
+        <service id="Shopware\Core\Content\Product\Aggregate\ProductSearchConfig\ProductSearchConfigDefinition">
+            <tag name="shopware.entity.definition"/>
+        </service>
+
+        <service id="Shopware\Core\Content\Product\Aggregate\ProductSearchConfig\ProductSearchConfigExceptionHandler">
+            <tag name="shopware.dal.exception_handler"/>
+        </service>
+
+        <service id="Shopware\Core\Content\Product\Aggregate\ProductSearchConfigField\ProductSearchConfigFieldDefinition">
+            <tag name="shopware.entity.definition"/>
+        </service>
+
+        <service id="Shopware\Core\Content\Product\Aggregate\ProductSearchConfigField\ProductSearchConfigFieldExceptionHandler">
+            <tag name="shopware.dal.exception_handler"/>
+        </service>
+
+        <service id="Shopware\Core\Content\Product\Aggregate\ProductSearchKeyword\ProductSearchKeywordDefinition">
+            <tag name="shopware.entity.definition"/>
+        </service>
+    </services>
+</container>

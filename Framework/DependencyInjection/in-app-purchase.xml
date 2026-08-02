@@ -1,0 +1,70 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <!--
+        Minimal InAppPurchase service chain required by InfoController (arg #12).
+
+        Muckidrive does not use Shopware Store / InAppPurchases. These services are
+        registered here purely to satisfy InfoController's constructor type requirement
+        (private readonly InAppPurchase $inAppPurchase). None of these services will
+        actually perform store HTTP calls because core.store.iapKey is not configured.
+
+        Chain: InAppPurchase ← InAppPurchaseProvider ← { SystemConfigService, JWTDecoder, KeyFetcher, logger }
+               KeyFetcher ← { shopware.store_client, StoreRequestOptionsProvider, SystemConfigService, logger }
+               StoreRequestOptionsProvider ← { user.repository, SystemConfigService, InstanceService, LocaleProvider }
+    -->
+
+    <services>
+
+        <!-- GuzzleHttp client: required by KeyFetcher. No middlewares — only instantiated if IAP fetch is triggered. -->
+        <service id="shopware.store_client" class="GuzzleHttp\Client" lazy="true" public="true"/>
+
+        <!-- LocaleProvider: only needs user.repository -->
+        <service id="Shopware\Core\Framework\Store\Authentication\LocaleProvider">
+            <argument type="service" id="user.repository"/>
+        </service>
+
+        <!-- InstanceService: instance_id not set on Muckidrive — use empty string -->
+        <service id="Shopware\Core\Framework\Store\Services\InstanceService">
+            <argument>%kernel.shopware_version%</argument>
+            <argument></argument>
+        </service>
+
+        <!-- StoreRequestOptionsProvider: needed by KeyFetcher -->
+        <service id="Shopware\Core\Framework\Store\Authentication\StoreRequestOptionsProvider" public="true">
+            <argument type="service" id="user.repository"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Shopware\Core\Framework\Store\Services\InstanceService"/>
+            <argument type="service" id="Shopware\Core\Framework\Store\Authentication\LocaleProvider"/>
+        </service>
+
+        <!-- JWTDecoder: no constructor args -->
+        <service id="Shopware\Core\Framework\JWT\JWTDecoder"/>
+
+        <!-- KeyFetcher: fetches JWKS from SBP — never called on Muckidrive since iapKey is empty -->
+        <service id="Shopware\Core\Framework\Store\InAppPurchase\Services\KeyFetcher">
+            <argument type="service" id="shopware.store_client"/>
+            <argument type="service" id="Shopware\Core\Framework\Store\Authentication\StoreRequestOptionsProvider"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="logger"/>
+        </service>
+
+        <!-- InAppPurchaseProvider: returns empty array when core.store.iapKey is not configured -->
+        <service id="Shopware\Core\Framework\Store\InAppPurchase\Services\InAppPurchaseProvider">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Shopware\Core\Framework\JWT\JWTDecoder"/>
+            <argument type="service" id="Shopware\Core\Framework\Store\InAppPurchase\Services\KeyFetcher"/>
+            <argument type="service" id="logger"/>
+        </service>
+
+        <!-- InAppPurchase: required by InfoController arg #12 -->
+        <service id="Shopware\Core\Framework\Store\InAppPurchase" public="true">
+            <argument type="service" id="Shopware\Core\Framework\Store\InAppPurchase\Services\InAppPurchaseProvider"/>
+            <tag name="kernel.reset" method="reset"/>
+        </service>
+
+    </services>
+</container>

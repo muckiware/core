@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
+    <card>
+        <title>Basic information</title>
+        <title lang="de-DE">Stammdaten</title>
+
+        <input-field>
+            <name>shopName</name>
+            <label>Application name</label>
+            <label lang="de-DE">Anwendungsname</label>
+            <placeholder>Enter application name...</placeholder>
+            <placeholder lang="de-DE">Anwendungsname eingeben ...</placeholder>
+        </input-field>
+
+        <input-field>
+            <name>email</name>
+            <label>Administrator email address</label>
+            <label lang="de-DE">Administrator-E-Mail-Adresse</label>
+            <placeholder>Enter email address...</placeholder>
+            <placeholder lang="de-DE">E-Mail-Adresse eingeben ...</placeholder>
+        </input-field>
+
+        <input-field>
+            <name>metaAuthor</name>
+            <label>Meta Author</label>
+            <label lang="de-DE">Meta-Author</label>
+            <placeholder>Enter author name...</placeholder>
+            <placeholder lang="de-DE">Author-Namen eingeben ...</placeholder>
+        </input-field>
+    </card>
+
+    <card>
+        <title>Meta</title>
+        <input-field type="text">
+            <name>metaRobots</name>
+            <label>Robots Meta Tag</label>
+            <label lang="de-DE">Robots Meta Tag</label>
+            <helpText>Default content attribute for the "robots" meta tag.</helpText>
+            <helpText lang="de-DE">Standardwert des "robots" Meta Tags.</helpText>
+            <defaultValue>index,follow</defaultValue>
+            <placeholder>index,follow</placeholder>
+        </input-field>
+    </card>
+
+    <card>
+        <title>Rules for robots.txt</title>
+        <title lang="de-DE">Regeln für robots.txt</title>
+        <input-field type="bool">
+            <name>robotsDisableDefaults</name>
+            <label>Disable default robots.txt rules</label>
+            <label lang="de-DE">Standard-Regeln für robots.txt deaktivieren</label>
+        </input-field>
+        <input-field type="textarea">
+            <name>robotsRules</name>
+            <label>Domain specific robots.txt rules</label>
+            <label lang="de-DE">Domain spezifische robots.txt Regeln</label>
+        </input-field>
+    </card>
+</config>
