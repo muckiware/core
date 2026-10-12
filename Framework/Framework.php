@@ -52,6 +52,7 @@ use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 
 use Muckiware\Core\Helper;
@@ -133,31 +134,31 @@ class Framework extends Bundle
     public function loadSWServices(ContainerBuilder $container): void
     {
         $frameworkFolder = Helper::getFolderByClassName(SWFramework::class, 'framework');
-        $loader = new XmlFileLoader($container, new FileLocator($frameworkFolder.'/DependencyInjection/'));
+        $loader = new PhpFileLoader($container, new FileLocator($frameworkFolder.'/DependencyInjection/'));
 
-        $loader->load('acl.xml');
-        $loader->load('custom-field.xml');
-        $loader->load('data-abstraction-layer.xml');
-        $loader->load('event.xml');
-        $loader->load('hydrator.xml');
-        $loader->load('message-queue.xml');
-        $loader->load('rule.xml');
-        $loader->load('scheduled-task.xml');
-        $loader->load('language.xml');
-//        $loader->load('seo.xml');
-        $loader->load('rate-limiter.xml');
-        $loader->load('increment.xml');
-        $loader->load('flag.xml');
-        $loader->load('health.xml');
-        $loader->load('telemetry.xml');
-        $loader->load('notification.xml');
-        $loader->load('sso.xml');
+        $loader->load('acl.php');
+        $loader->load('custom-field.php');
+        $loader->load('data-abstraction-layer.php');
+        $loader->load('event.php');
+        $loader->load('hydrator.php');
+        $loader->load('message-queue.php');
+        $loader->load('rule.php');
+        $loader->load('scheduled-task.php');
+        $loader->load('language.php');
+//        $loader->load('seo.php');
+        $loader->load('rate-limiter.php');
+        $loader->load('increment.php');
+        $loader->load('flag.php');
+        $loader->load('health.php');
+        $loader->load('telemetry.php');
+        $loader->load('notification.php');
+        $loader->load('sso.php');
 
         if ($container->getParameter('kernel.environment') === 'test') {
-            $loader->load('services_test.xml');
-            $loader->load('store_test.xml');
-            $loader->load('seo_test.xml');
-            $loader->load('app_test.xml');
+            $loader->load('services_test.php');
+            $loader->load('store_test.php');
+            $loader->load('seo_test.php');
+            $loader->load('app_test.php');
         }
     }
 
@@ -192,8 +193,8 @@ class Framework extends Bundle
             MeterProvider::bindMeter($this->container);
         }
 
-        CacheValueCompressor::$compress = $this->container->getParameter('shopware.cache.cache_compression');
-        CacheValueCompressor::$compressMethod = $this->container->getParameter('shopware.cache.cache_compression_method');
+        CacheValueCompressor::$compress = $this->container->getParameter('shopware.cache.compress');
+        CacheValueCompressor::$compressMethod = $this->container->getParameter('shopware.cache.compression_method');
         Feature::$emitDeprecations = $this->container->getParameter('kernel.debug');
 
         /** @var StampedeProtectionConfigurator $stampedeProtectionConfigurator */

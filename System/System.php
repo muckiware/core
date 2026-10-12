@@ -59,14 +59,14 @@ class System extends Bundle
         $systemDir = Helper::getFolderByClassName(SWSystem::class, 'system');
         $configLocator = new FileLocator($systemDir.'/DependencyInjection/');
 
-        $loader = new XmlFileLoader($container, $configLocator);
-        $loader->load('configuration.xml');
-        $loader->load('country.xml');
-        $loader->load('currency.xml');
-        $loader->load('custom_entity.xml');
-        $loader->load('locale.xml');
-        $loader->load('integration.xml');
-        $loader->load('tag.xml');
+        $loader = new PhpFileLoader($container, $configLocator);
+        $loader->load('configuration.php');
+        $loader->load('country.php');
+        $loader->load('currency.php');
+        $loader->load('custom_entity.php');
+        $loader->load('locale.php');
+        $loader->load('integration.php');
+        $loader->load('tag.php');
     }
 
     /**

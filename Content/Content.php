@@ -10,6 +10,7 @@ use Shopware\Core\Content\Content as SWContent;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 
 use Muckiware\Core\Helper;
@@ -44,19 +45,19 @@ class Content extends Bundle
         $contentDir = Helper::getFolderByClassName(SWContent::class, 'content');
         $configLocator = new FileLocator($contentDir.'/DependencyInjection/');
 
-        $loader = new XmlFileLoader($container, $configLocator);
-        $loader->load('cookie.xml');
-        $loader->load('media.xml');
-        $loader->load('media_path.xml');
-        $loader->load('measurement_system.xml');
-        $loader->load('property.xml');
+        $loader = new PhpFileLoader($container, $configLocator);
+        $loader->load('cookie.php');
+        $loader->load('media.php');
+        $loader->load('media_path.php');
+        $loader->load('measurement_system.php');
+        $loader->load('property.php');
         // cms.xml not loaded from SW Core: depends on sales_channel.product.repository (no Checkout bundle)
         // mail_template.xml not loaded from SW Core: MailAttachmentsBuilder depends on DocumentGenerator (no Checkout bundle)
         // sitemap.xml not loaded: depends on CartRuleLoader and SalesChannelContextFactory (no Checkout bundle)
         // flow.xml not loaded from SW Core: FlowRuleScopeBuilder/FlowExecutor depend on Checkout services
 
         if ($container->getParameter('kernel.environment') === 'test') {
-            $loader->load('media_test.xml');
+            $loader->load('media_test.php');
         }
     }
 
