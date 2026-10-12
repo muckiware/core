@@ -11,7 +11,6 @@ use Shopware\Core\Framework\Log\Package;
 use Shopware\Core\Framework\MessageQueue\ScheduledTask\ScheduledTaskCollection;
 use Shopware\Core\Framework\Webhook\EventLog\WebhookEventLogDefinition;
 use Shopware\Core\Framework\Webhook\Message\WebhookEventMessage;
-use Shopware\Core\Framework\Webhook\Service\RelatedWebhooks;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -30,8 +29,7 @@ final readonly class WebhookEventMessageHandler
      * @param EntityRepository<ScheduledTaskCollection> $webhookEventLogRepository
      */
     public function __construct(
-        private EntityRepository $webhookEventLogRepository,
-        private RelatedWebhooks $relatedWebhooks
+        private EntityRepository $webhookEventLogRepository
     ) {
     }
 

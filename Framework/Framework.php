@@ -18,6 +18,7 @@ use Shopware\Core\Framework\Bundle;
 use Shopware\Core\Framework\DataAbstractionLayer\AttributeEntityCompiler;
 use Muckiware\Core\Framework\DependencyInjection\CompilerPass\LenientDefinitionRegistryPass;
 use Muckiware\Core\Framework\DependencyInjection\CompilerPass\RemoveCheckoutDependentServicesPass;
+use Muckiware\Core\Framework\DependencyInjection\ServiceOverrides;
 use Shopware\Core\Framework\DependencyInjection\CompilerPass\AssetBundleRegistrationCompilerPass;
 use Shopware\Core\Framework\DependencyInjection\CompilerPass\AssetRegistrationCompilerPass;
 use Shopware\Core\Framework\DependencyInjection\CompilerPass\AttributeEntityCompilerPass;
@@ -48,12 +49,16 @@ use Shopware\Core\Framework\Test\DependencyInjection\CompilerPass\ContainerVisib
 use Shopware\Core\Framework\Test\RateLimiter\DisableRateLimiterCompilerPass;
 
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Config\Loader\DelegatingLoader;
+use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\DependencyInjection\Loader\GlobFileLoader;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 use Muckiware\Core\Helper;
 
@@ -63,6 +68,46 @@ use Muckiware\Core\Helper;
 #[Package('framework')]
 class Framework extends Bundle
 {
+    private const PACKAGE_CONFIG_EXTS = '.{yaml,yml}';
+
+    /**
+     * Shopware services that are not supported on Muckidrive (shop, sales channel and Storefront features).
+     */
+    private const UNSUPPORTED_SW_SERVICES = [
+        'console.command.assets_install',
+        'Shopware\\Core\\Checkout\\Cart\\ApiOrderCartService',
+        'Shopware\\Core\\Framework\\Adapter\\Cache\\CacheStateSubscriber',
+        'Shopware\\Core\\Framework\\Adapter\\Twig\\AppTemplateIterator',
+        'Shopware\\Core\\Framework\\Adapter\\Twig\\Extension\\InAppPurchaseExtension',
+        'Shopware\\Core\\Framework\\Adapter\\Twig\\Filter\\CurrencyFilter',
+        'Shopware\\Core\\Framework\\Api\\Controller\\SalesChannelProxyController',
+        'Shopware\\Core\\Framework\\App\\Lifecycle\\Update\\AbstractAppUpdater',
+        'Shopware\\Core\\Framework\\App\\ScheduledTask\\UpdateAppsHandler',
+        'Shopware\\Core\\Framework\\App\\ScheduledTask\\UpdateAppsTask',
+        'Shopware\\Core\\Framework\\Demodata\\PersonalData\\CleanPersonalDataCommand',
+        'Shopware\\Core\\Framework\\Routing\\SalesChannelRequestContextResolver',
+        'Shopware\\Core\\Framework\\Webhook\\Service\\WebhookManager',
+        'Shopware\\Core\\Framework\\Webhook\\WebhookCacheClearer',
+        'Shopware\\Core\\Framework\\Webhook\\WebhookDispatcher',
+        'Shopware\\Core\\System\\CustomEntity\\CustomEntityLifecycleService',
+    ];
+
+    /**
+     * Shopware services whose class is replaced by a Muckiware subclass. The vendor arguments are kept.
+     */
+    private const SW_CLASS_REPLACEMENTS = [
+        'Shopware\\Core\\Framework\\App\\Hmac\\QuerySigner' => \Muckiware\Core\Framework\App\Hmac\QuerySigner::class,
+        'Shopware\\Core\\Framework\\App\\Payload\\AppPayloadServiceHelper' => \Muckiware\Core\Framework\App\Payload\AppPayloadServiceHelper::class,
+    ];
+
+    /**
+     * Shopware services that are fetched directly from the container by Muckiware code.
+     */
+    private const PUBLIC_SW_SERVICES = [
+        'shopware.asset.asset',
+        'Shopware\\Core\\Framework\\Api\\OAuth\\SymfonyBearerTokenValidator',
+    ];
+
     public function getTemplatePriority(): int
     {
         return -1;
@@ -80,8 +125,9 @@ class Framework extends Bundle
     public function build(ContainerBuilder $container): void
     {
         $container->setParameter('locale', 'en-GB');
-        $this->loadMuWaServices($container);
         $this->loadSWServices($container);
+        $this->loadMuWaServices($container);
+        $this->applyServiceOverrides($container);
 
         /** Needs to run after @see RegisterAutoconfigureAttributesPass (priority 100) to include all services that are autoconfigured */
         $container->addCompilerPass(new AttributeEntityCompilerPass(new AttributeEntityCompiler()), PassConfig::TYPE_BEFORE_OPTIMIZATION, 99);
@@ -122,9 +168,12 @@ class Framework extends Bundle
         // Runs at TYPE_BEFORE_REMOVING (after bundle build), removes services that depend on
         // missing Checkout bundle services before Symfony's validation pass fires.
         $container->addCompilerPass(new RemoveCheckoutDependentServicesPass(), PassConfig::TYPE_BEFORE_REMOVING, 100);
+        // Second run: later BEFORE_REMOVING passes re-register service locators (same hash id) with their
+        // original map, which brings back closures to removed services (e.g. controller value resolvers).
+        $container->addCompilerPass(new RemoveCheckoutDependentServicesPass(), PassConfig::TYPE_BEFORE_REMOVING, -250);
 
         parent::build($container);
-        $this->buildDefaultConfig($container);
+        $this->buildSWDefaultConfig($container);
     }
 
     /**
@@ -137,6 +186,14 @@ class Framework extends Bundle
         $loader = new PhpFileLoader($container, new FileLocator($frameworkFolder.'/DependencyInjection/'));
 
         $loader->load('acl.php');
+        $loader->load('api.php');
+        $loader->load('app.php');
+        $loader->load('cache.php');
+        $loader->load('filesystem.php');
+        $loader->load('plugin.php');
+        $loader->load('script.php');
+        $loader->load('services.php');
+        $loader->load('webhook.php');
         $loader->load('custom-field.php');
         $loader->load('data-abstraction-layer.php');
         $loader->load('event.php');
@@ -168,16 +225,43 @@ class Framework extends Bundle
     public function loadMuWaServices(ContainerBuilder $container): void
     {
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/DependencyInjection/'));
-        $loader->load('api.xml');
-        $loader->load('app.xml');
-        $loader->load('cache.xml');
-        $loader->load('filesystem.xml');
+        // In-app purchase services extracted from SW Core store.php (without the store/extension management)
         $loader->load('in-app-purchase.xml');
-        $loader->load('plugin.xml');
-        $loader->load('script.xml');
-        $loader->load('services.xml');
-        $loader->load('webhook.xml');
+        $loader->load('overrides.xml');
     }
+
+    /**
+     * Loads the package configuration (feature flags, shopware.yaml, ...) of the installed Shopware
+     * Core framework, like Bundle::buildDefaultConfig() does for the bundle's own Resources/config.
+     *
+     * @throws \ReflectionException
+     * @throws \Exception
+     */
+    private function buildSWDefaultConfig(ContainerBuilder $container): void
+    {
+        $configDir = Helper::getFolderByClassName(SWFramework::class, 'framework') . '/Resources/config';
+        $locator = new FileLocator($configDir);
+        $configLoader = new DelegatingLoader(new LoaderResolver([
+            new YamlFileLoader($container, $locator),
+            new GlobFileLoader($container, $locator),
+        ]));
+
+        $env = $container->getParameter('kernel.environment');
+        \assert(\is_string($env));
+
+        // YAML only: packages/mcp.php configures MCP servers for the Admin and Store API tool sets,
+        // which are not registered on Muckidrive.
+        $configLoader->load($configDir . '/{packages}/*' . self::PACKAGE_CONFIG_EXTS, 'glob');
+        $configLoader->load($configDir . '/{packages}/' . $env . '/*' . self::PACKAGE_CONFIG_EXTS, 'glob');
+    }
+
+    private function applyServiceOverrides(ContainerBuilder $container): void
+    {
+        ServiceOverrides::remove($container, self::UNSUPPORTED_SW_SERVICES);
+        ServiceOverrides::replaceClasses($container, self::SW_CLASS_REPLACEMENTS);
+        ServiceOverrides::makePublic($container, self::PUBLIC_SW_SERVICES);
+    }
+
     public function boot(): void
     {
         parent::boot();

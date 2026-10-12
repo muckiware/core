@@ -6,6 +6,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DBALException;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Content\Flow\Dispatching\Action\FlowAction;
+use Shopware\Core\Content\Flow\Dispatching\FlowExecutor as ShopwareFlowExecutor;
 use Shopware\Core\Content\Flow\Dispatching\StorableFlow;
 use Shopware\Core\Content\Flow\Dispatching\Struct\ActionSequence;
 use Shopware\Core\Content\Flow\Dispatching\Struct\Flow;
@@ -29,10 +30,13 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  * Rule matching falls back to context rule IDs only (no order-based scope evaluation,
  * since Checkout bundle is not loaded).
  *
+ * Extends the Shopware class only to satisfy type hints (e.g. BufferedFlowExecutor). All public
+ * methods are overridden, so the parent constructor and its Checkout dependencies are not used.
+ *
  * @internal
  */
 #[Package('framework')]
-class FlowExecutor
+class FlowExecutor extends ShopwareFlowExecutor
 {
     /**
      * @var array<string, FlowAction>

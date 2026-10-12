@@ -32,6 +32,23 @@ class LenientDefinitionInstanceRegistry extends DefinitionInstanceRegistry
         }
     }
 
+    /**
+     * Since Shopware 6.7.15 FkFields reference their target by entity name (e.g. "plugin") instead of
+     * the definition class. get() never throws, so the parent's entity name fallback is resolved here.
+     */
+    public function getByClassOrEntityName(string $key): EntityDefinition
+    {
+        if (str_contains($key, '\\')) {
+            return $this->get($key);
+        }
+
+        try {
+            return $this->getByEntityName($key);
+        } catch (\Throwable) {
+            return $this->instances[$key] ??= $this->ghost($key);
+        }
+    }
+
     private function instantiateOrGhost(string $class): EntityDefinition
     {
         if (isset($this->instances[$class])) {
@@ -60,11 +77,16 @@ class LenientDefinitionInstanceRegistry extends DefinitionInstanceRegistry
 
     /**
      * Derives a snake_case entity name from a fully-qualified class name.
+     * Entity names (no namespace separator) are returned unchanged.
      *
      * e.g. Shopware\Core\Checkout\Payment\PaymentMethodDefinition → payment_method
      */
     private function classToEntityName(string $class): string
     {
+        if (!str_contains($class, '\\')) {
+            return $class;
+        }
+
         $shortName = substr($class, (int) strrpos($class, '\\') + 1);
         $shortName = (string) preg_replace('/Definition$/', '', $shortName);
 

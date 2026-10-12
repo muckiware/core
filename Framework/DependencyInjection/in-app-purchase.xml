@@ -58,6 +58,7 @@
             <argument type="service" id="Shopware\Core\Framework\JWT\JWTDecoder"/>
             <argument type="service" id="Shopware\Core\Framework\Store\InAppPurchase\Services\KeyFetcher"/>
             <argument type="service" id="logger"/>
+            <argument type="service" id="Psr\Clock\ClockInterface"/>
         </service>
 
         <!-- InAppPurchase: required by InfoController arg #12 -->

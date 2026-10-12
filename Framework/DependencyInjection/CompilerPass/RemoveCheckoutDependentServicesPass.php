@@ -2,7 +2,9 @@
 
 namespace Muckiware\Core\Framework\DependencyInjection\CompilerPass;
 
+use Muckiware\Core\Framework\DependencyInjection\ServiceOverrides;
 use Symfony\Component\DependencyInjection\Argument\IteratorArgument;
+use Symfony\Component\DependencyInjection\Argument\ServiceClosureArgument;
 use Symfony\Component\DependencyInjection\Argument\ServiceLocatorArgument;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -35,7 +37,8 @@ class RemoveCheckoutDependentServicesPass implements CompilerPassInterface
         // snapshot, method calls referencing inlined services (e.g. assets.packages::setDefaultPackage
         // referencing shopware.asset.asset) would be incorrectly stripped by cleanupOptionalReferences,
         // causing runtime errors like "There is no 'asset' asset package".
-        $preInlinedIds = $container->getRemovedIds();
+        // Services removed on purpose (ServiceOverrides::remove()) are genuinely missing, not inlined.
+        $preInlinedIds = array_diff_key($container->getRemovedIds(), ServiceOverrides::pullRemovedIds($container));
 
         do {
             // Clean optional collection arguments (IteratorArgument, ServiceLocatorArgument, method calls)
@@ -219,13 +222,19 @@ class RemoveCheckoutDependentServicesPass implements CompilerPassInterface
     /**
      * @param array<mixed> $arguments
      * @param array<string, true> $preInlinedIds
+     * @param bool $nested true for values inside an array argument (e.g. the map of a ".service_locator.*" service)
      * @return array<mixed>
      */
-    private function filterOptionalArguments(array $arguments, ContainerBuilder $container, array $preInlinedIds): array
+    private function filterOptionalArguments(array $arguments, ContainerBuilder $container, array $preInlinedIds, bool $nested = false): array
     {
         $result = [];
 
         foreach ($arguments as $key => $argument) {
+            if ($nested && $this->isMissingServiceClosure($argument, $container, $preInlinedIds)) {
+                // Service locators compiled by ServiceLocatorTagPass wrap their entries in closures.
+                continue;
+            }
+
             if ($argument instanceof IteratorArgument) {
                 // Do NOT use array_values() — the IteratorArgument is keyed by tag attribute
                 // (e.g. 'asset', 'sitemap', 'public' for tagged_iterator('assets.package', 'package')).
@@ -245,13 +254,28 @@ class RemoveCheckoutDependentServicesPass implements CompilerPassInterface
                 }
                 $result[$key] = new ServiceLocatorArgument($values);
             } elseif (is_array($argument)) {
-                $result[$key] = $this->filterOptionalArguments($argument, $container, $preInlinedIds);
+                $result[$key] = $this->filterOptionalArguments($argument, $container, $preInlinedIds, true);
             } else {
                 $result[$key] = $argument;
             }
         }
 
         return $result;
+    }
+
+    /**
+     * @param array<string, true> $preInlinedIds
+     */
+    private function isMissingServiceClosure(mixed $argument, ContainerBuilder $container, array $preInlinedIds): bool
+    {
+        if (!$argument instanceof ServiceClosureArgument) {
+            return false;
+        }
+
+        $reference = $argument->getValues()[0] ?? null;
+
+        return $reference instanceof Reference
+            && $this->isGenuinelyMissing((string) $reference, $container, $preInlinedIds);
     }
 
     /**
