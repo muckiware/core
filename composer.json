@@ -3,7 +3,7 @@
     "type": "library",
     "description": "Muckidrive core component",
     "license": "MIT",
-    "version": "0.0.1.0",
+    "version": "0.0.1.1",
     "autoload": {
         "psr-4": {
             "Muckiware\\Core\\": ""

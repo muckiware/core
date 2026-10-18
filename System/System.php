@@ -6,6 +6,7 @@ use Shopware\Core\Framework\Bundle;
 use Shopware\Core\Framework\Log\Package;
 use Shopware\Core\System\CustomEntity\CustomEntityRegistrar;
 use Shopware\Core\System\DependencyInjection\CompilerPass\NumberRangeIncrementerCompilerPass;
+use Muckiware\Core\System\DependencyInjection\CompilerPass\RemoveCurrencyServicesCompilerPass;
 use Shopware\Core\System\DependencyInjection\CompilerPass\SalesChannelEntityCompilerPass;
 use Shopware\Core\System\System as SWSystem;
 
@@ -75,6 +76,7 @@ class System extends Bundle
 
         $container->addCompilerPass(new SalesChannelEntityCompilerPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 0);
         $container->addCompilerPass(new NumberRangeIncrementerCompilerPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 0);
+        $container->addCompilerPass(new RemoveCurrencyServicesCompilerPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 0);
     }
 
     /**
@@ -90,7 +92,6 @@ class System extends Bundle
         $loader->load('configuration.php');
         $loader->load('consent.php');
         $loader->load('country.php');
-        $loader->load('currency.php');
         $loader->load('custom_entity.php');
         $loader->load('locale.php');
         $loader->load('integration.php');
