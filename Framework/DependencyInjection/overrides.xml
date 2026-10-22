@@ -1,0 +1,58 @@
+<?xml version="1.0" ?>
+
+<!--
+    Muckiware replacements for Shopware Core framework services.
+
+    The original definitions are loaded from vendor/shopware/core/Framework/DependencyInjection/*.php
+    (see Framework::loadSWServices()). This file only contains standalone Muckiware services and aliases
+    that point the Shopware service ids to them. Replacements that extend the Shopware class are
+    handled in Framework::SW_CLASS_REPLACEMENTS instead, so they keep the vendor arguments.
+-->
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- App system -->
+        <service id="Muckiware\Core\Framework\App\Api\AppJWTGenerateRoute" public="true">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Shopware\Core\Framework\App\ShopId\ShopIdProvider"/>
+        </service>
+        <service id="Shopware\Core\Framework\App\Api\AppJWTGenerateRoute" alias="Muckiware\Core\Framework\App\Api\AppJWTGenerateRoute" public="true"/>
+
+        <!-- Kept under the Muckiware ids, which are used by muckiware/master -->
+        <service id="Muckiware\Core\Framework\App\Payload\AppPayloadServiceHelper" alias="Shopware\Core\Framework\App\Payload\AppPayloadServiceHelper" public="true"/>
+        <service id="Muckiware\Core\Framework\App\Hmac\QuerySigner" alias="Shopware\Core\Framework\App\Hmac\QuerySigner"/>
+
+        <!-- Extension management: plugins only, no app lifecycle -->
+        <service id="Muckiware\Core\Framework\Store\Services\StoreAppLifecycleService"/>
+        <service id="Shopware\Core\Framework\Store\Services\AbstractStoreAppLifecycleService" alias="Muckiware\Core\Framework\Store\Services\StoreAppLifecycleService"/>
+
+        <!-- HTTP cache: no cart/customer state headers -->
+        <service id="Muckiware\Core\Framework\Adapter\Cache\Http\CacheResponseSubscriber">
+            <argument>%shopware.http.cache.default_ttl%</argument>
+            <argument>%shopware.http.cache.enabled%</argument>
+            <argument type="service" id="Shopware\Core\Framework\Routing\MaintenanceModeResolver"/>
+            <argument>%shopware.http_cache.stale_while_revalidate%</argument>
+            <argument>%shopware.http_cache.stale_if_error%</argument>
+            <argument type="service" id="Shopware\Core\Framework\Adapter\Cache\Http\CacheHeadersService"/>
+            <argument type="service" id="Shopware\Core\Framework\Adapter\Cache\Http\CachePolicyProvider"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="Shopware\Core\Framework\Adapter\Cache\Http\CacheResponseSubscriber" alias="Muckiware\Core\Framework\Adapter\Cache\Http\CacheResponseSubscriber"/>
+
+        <!-- Routing: API context without sales channel -->
+        <service id="Muckiware\Core\Framework\Routing\ApiRequestContextResolver">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Shopware\Core\Framework\Routing\RouteScopeRegistry"/>
+        </service>
+        <service id="Shopware\Core\Framework\Routing\ApiRequestContextResolver" alias="Muckiware\Core\Framework\Routing\ApiRequestContextResolver"/>
+
+        <!-- Webhooks: messages are only logged, not delivered -->
+        <service id="Muckiware\Core\Framework\Webhook\Handler\WebhookEventMessageHandler">
+            <argument type="service" id="webhook_event_log.repository"/>
+            <tag name="messenger.message_handler"/>
+        </service>
+        <service id="Shopware\Core\Framework\Webhook\Handler\WebhookEventMessageHandler" alias="Muckiware\Core\Framework\Webhook\Handler\WebhookEventMessageHandler"/>
+    </services>
+</container>

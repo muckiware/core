@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+
+<!--
+    Muckiware replacements for Shopware Core content services.
+
+    The original definitions are loaded from vendor/shopware/core/Content/DependencyInjection/*.php
+    (see Content::loadSWServices()). This file only contains Muckiware services that replace
+    Shopware services which depend on the Checkout bundle.
+-->
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- Context-based rule matching only: SW's FlowExecutor depends on CartRuleLoader and FlowRuleScopeBuilder -->
+        <service id="Shopware\Core\Content\Flow\Dispatching\FlowExecutor"
+                 class="Muckiware\Core\Content\Flow\Dispatching\FlowExecutor"
+                 public="true">
+            <argument type="service" id="event_dispatcher"/>
+            <argument type="service" id="Shopware\Core\Framework\App\Flow\Action\AppFlowActionProvider"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Shopware\Core\Framework\Extensions\ExtensionDispatcher"/>
+            <argument type="service" id="logger"/>
+            <argument type="tagged_iterator" tag="flow.action" index-by="key"/>
+        </service>
+
+        <!-- Without document attachments: SW's MailerTransportLoader depends on MailAttachmentsBuilder -->
+        <service id="Shopware\Core\Content\Mail\Transport\MailerTransportLoader"
+                 class="Muckiware\Core\Content\Mail\Transport\MailerTransportLoader">
+            <argument type="service" id="mailer.transport_factory"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+        </service>
+
+        <service id="Muckiware\Core\Content\Rule\RuleValidator">
+            <argument type="service" id="validator"/>
+            <argument type="service" id="Shopware\Core\Framework\Rule\Collector\RuleConditionRegistry"/>
+            <argument type="service" id="rule_condition.repository"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="Shopware\Core\Content\Rule\RuleValidator" alias="Muckiware\Core\Content\Rule\RuleValidator"/>
+    </services>
+</container>

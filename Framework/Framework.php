@@ -210,6 +210,7 @@ class Framework extends Bundle
         $loader->load('telemetry.php');
         $loader->load('notification.php');
         $loader->load('sso.php');
+        $loader->load('store.php');
 
         if ($container->getParameter('kernel.environment') === 'test') {
             $loader->load('services_test.php');
@@ -225,8 +226,6 @@ class Framework extends Bundle
     public function loadMuWaServices(ContainerBuilder $container): void
     {
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/DependencyInjection/'));
-        // In-app purchase services extracted from SW Core store.php (without the store/extension management)
-        $loader->load('in-app-purchase.xml');
         $loader->load('overrides.xml');
     }
 

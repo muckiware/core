@@ -18,6 +18,7 @@ return function (RoutingConfigurator $routes): void {
 
     $routes->import($frameworkDir.'/Api/Controller/**/*Controller.php', 'attribute');
     $routes->import($frameworkDir.'/Plugin/**/*Controller.php', 'attribute');
+    $routes->import($frameworkDir.'/Store/**/*Controller.php', 'attribute');
     $routes->import($frameworkDir.'/MessageQueue/**/*Controller.php', 'attribute');
     $routes->import($frameworkDir.'/Increment/Controller/*Controller.php', 'attribute');
     $routes->import($frameworkDir.'/Migration/**/*Controller.php', 'attribute');

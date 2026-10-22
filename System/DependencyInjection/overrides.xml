@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+
+<!--
+    Muckiware replacements for Shopware Core system services.
+
+    The original definitions are loaded from vendor/shopware/core/System/DependencyInjection/*.php
+    (see System::loadSWServices()). This file only contains Muckiware services and aliases that point
+    the Shopware service ids to them.
+-->
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- "Frontend" entity, based on the sales channel definition -->
+        <service id="Muckiware\Core\System\SalesChannel\FrontendDefinition">
+            <tag name="shopware.entity.definition"/>
+        </service>
+
+        <!-- Context persister without CartPersister (no Checkout bundle) -->
+        <service id="Muckiware\Core\System\SalesChannel\Context\SalesChannelContextPersister">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="event_dispatcher"/>
+            <argument type="string">%shopware.api.store.context_lifetime%</argument>
+        </service>
+        <service id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextPersister" alias="Muckiware\Core\System\SalesChannel\Context\SalesChannelContextPersister"/>
+    </services>
+</container>
