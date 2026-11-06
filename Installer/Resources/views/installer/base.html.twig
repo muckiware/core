@@ -4,6 +4,7 @@
     - title, favicons and logo use Muckidrive (bundles/muckidriveinstaller)
     - muckidrive.css is loaded after the Shopware styles
     - the license step is not part of the menu
+    - the version notice shows the muckiware/core version
 #}
 {% set menu = (menu ?? [])|filter(entry => entry.label != 'license') %}
 <!DOCTYPE html>
@@ -24,7 +25,7 @@
         <link rel="stylesheet" type="text/css" href="{{ asset('bundles/installer/assets/styles/fonts.css', 'asset') }}?v={{ shopware.version }}" media="all"/>
         <link rel="stylesheet" type="text/css" href="{{ asset('bundles/installer/assets/styles/icons.css', 'asset') }}?v={{ shopware.version }}" media="all"/>
         <link rel="stylesheet" type="text/css" href="{{ asset('bundles/installer/assets/styles/style.css', 'asset') }}?v={{ shopware.version }}" media="all"/>
-        <link rel="stylesheet" type="text/css" href="{{ asset('bundles/muckidriveinstaller/assets/styles/muckidrive.css', 'asset') }}?v={{ shopware.version }}" media="all"/>
+        <link rel="stylesheet" type="text/css" href="{{ asset('bundles/muckidriveinstaller/assets/styles/muckidrive.css', 'asset') }}?v={{ muckidrive_version }}" media="all"/>
     </head>
     <body>
         <header class="header-main">
@@ -35,7 +36,7 @@
                 </div>
 
                 <div class="version--notice">
-                    {{ "shopware.installer.version_text"|trans }} {{ shopware.version }}
+                    {{ "shopware.installer.version_text"|trans }} {{ muckidrive_version }}
                 </div>
             </div>
 

@@ -9,10 +9,12 @@
  */
 namespace Muckiware\Core\Installer;
 
+use Composer\InstalledVersions;
 use Shopware\Core\Framework\Log\Package;
 use Shopware\Core\Installer\InstallerKernel as SWInstallerKernel;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
@@ -38,10 +40,14 @@ final class InstallerKernel extends SWInstallerKernel
         $xmlLoader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/DependencyInjection/'));
         $xmlLoader->load('services.xml');
 
+        // rebuild the container (debug mode) when the muckiware/core version changes
+        $container->addResource(new FileResource(\dirname(__DIR__) . '/composer.json'));
+
         // Configured paths take precedence over the bundle paths, so these templates override @Installer views.
         // The original Shopware templates stay reachable via @!Installer.
         $container->loadFromExtension('twig', [
             'paths' => [__DIR__ . '/Resources/views' => 'Installer'],
+            'globals' => ['muckidrive_version' => '%kernel.muckidrive_version%'],
         ]);
 
         // Configured translation paths are loaded after the bundle translations, so these Muckidrive-specific
@@ -51,11 +57,40 @@ final class InstallerKernel extends SWInstallerKernel
         ]);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    protected function getKernelParameters(): array
+    {
+        return [
+            ...parent::getKernelParameters(),
+            'kernel.muckidrive_version' => $this->resolveMuckidriveVersion(),
+        ];
+    }
+
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
         parent::configureRoutes($routes);
 
         // Imported after the Shopware routes, so routes with the same name replace the Shopware ones.
         $routes->import(__DIR__ . '/Resources/config/routes.php');
+    }
+
+    /**
+     * Reads the version from the composer.json of muckiware/core, because vendor/composer/installed.php
+     * is only refreshed by a composer install/update of the path repository.
+     */
+    private function resolveMuckidriveVersion(): string
+    {
+        $composerJson = \dirname(__DIR__) . '/composer.json';
+        $composer = \is_file($composerJson)
+            ? json_decode((string) file_get_contents($composerJson), true, flags: \JSON_THROW_ON_ERROR)
+            : [];
+
+        if (\is_array($composer) && \is_string($composer['version'] ?? null)) {
+            return $composer['version'];
+        }
+
+        return InstalledVersions::getPrettyVersion('muckiware/core') ?? '';
     }
 }
