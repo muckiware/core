@@ -1,0 +1,26 @@
+# Muckidrive-specific texts only. All other installer texts are loaded from
+# vendor/shopware/core/Installer/Resources/translations and are overridden key by key.
+shopware.installer:
+    menuitem:
+        configuration: System-Konfiguration
+    welcome:
+        title: 'Willkommen bei Muckidrive'
+        header: 'Deine Muckidrive-Installation'
+        message: >
+            Dieser Installer führt Dich durch alle Schritte, die für eine reibungslose Installation von Muckidrive
+            erforderlich sind.
+    requirements_error_title: 'Dein System ist noch nicht bereit für Muckidrive'
+    requirements_success_title: 'Dein System ist bereit für Muckidrive'
+    requirements_php_info: 'Dein Server sollte die folgenden Systemvoraussetzungen erfüllen, um Muckidrive im ganzen Ausmaß nutzen zu können.'
+    database-configuration_info: 'Um Muckidrive auf Deinem System zu installieren, brauchst Du die Zugangsdaten zu Deiner Datenbank. Wenn Du Dir nicht sicher bist, was Du hier eintragen musst, kontaktiere bitte Deinen Administrator/Hoster.'
+    database-configuration_invalid_requirements: 'Muckidrive benötigt mindestens MySQL 8.0.22 oder MariaDB 10.11'
+    database-import_info_text: 'Muckidrive wird auf der von Dir ausgewählten Datenbank installiert. Dieser Vorgang kann einige Minuten dauern, abhängig von Deinem System.'
+    database_import_success: 'Muckidrive wurde erfolgreich installiert!'
+    configuration_sconfig_text: 'Fast geschafft. Jetzt musst Du nur noch einige grundlegende Einstellungen für Dein System festlegen, dann ist die Installation abgeschlossen.'
+    configuration_admin_shop_headline: 'System-Daten'
+    configuration_sconfig_name: Systemname
+    configuration_sconfig_mail: 'System-E-Mail-Adresse:'
+    configuration_email_help_text: 'Diese E-Mail-Adresse wird für ausgehende System-E-Mails genutzt.'
+    finish_title: 'Das Setup für Muckidrive ist abgeschlossen.'
+    finish_subtitle: 'Klicke auf "Zur Administration", um die Administration von Muckidrive zu öffnen.'
+    finish_continue: 'Zur Administration'

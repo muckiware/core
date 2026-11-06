@@ -1,0 +1,49 @@
+<?xml version="1.0" ?>
+
+<!--
+    Muckiware replacements for the Shopware web installer services.
+
+    The original definitions are loaded from vendor/shopware/core/Installer/DependencyInjection/services.php
+    (by the Shopware Installer bundle). This file is loaded afterwards by Muckiware\Core\Installer\InstallerKernel
+    and only contains the services that differ on Muckidrive.
+-->
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="Shopware\Core\Installer\Database\MigrationCollectionFactory"
+                 class="Muckiware\Core\Installer\Database\MigrationCollectionFactory">
+            <argument>%kernel.project_dir%</argument>
+        </service>
+
+        <service id="Muckiware\Core\Installer\Configuration\SystemConfigurationService">
+            <argument type="service" id="event_dispatcher"/>
+            <argument type="service" id="Psr\Clock\ClockInterface"/>
+        </service>
+
+        <service id="Muckiware\Core\Installer\Controller\RequirementsController" public="true">
+            <argument type="tagged_iterator" tag="shopware.installer.requirement"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <service id="Muckiware\Core\Installer\Controller\LicenseController" public="true">
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <service id="Muckiware\Core\Installer\Controller\SystemConfigurationController" public="true">
+            <argument type="service" id="Shopware\Core\Maintenance\System\Service\DatabaseConnectionFactory"/>
+            <argument type="service" id="Shopware\Core\Installer\Configuration\EnvConfigWriter"/>
+            <argument type="service" id="Muckiware\Core\Installer\Configuration\SystemConfigurationService"/>
+            <argument type="service" id="Shopware\Core\Installer\Configuration\AdminConfigurationService"/>
+            <argument>%shopware.installer.supportedLanguages%</argument>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+    </services>
+</container>

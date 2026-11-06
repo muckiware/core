@@ -74,7 +74,6 @@ class Framework extends Bundle
      * Shopware services that are not supported on Muckidrive (shop, sales channel and Storefront features).
      */
     private const UNSUPPORTED_SW_SERVICES = [
-        'console.command.assets_install',
         'Shopware\\Core\\Checkout\\Cart\\ApiOrderCartService',
         'Shopware\\Core\\Framework\\Adapter\\Cache\\CacheStateSubscriber',
         'Shopware\\Core\\Framework\\Adapter\\Twig\\AppTemplateIterator',

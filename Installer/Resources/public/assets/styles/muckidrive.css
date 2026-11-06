@@ -1,0 +1,20 @@
+/*
+ * Muckidrive branding for the web installer.
+ *
+ * Loaded after the Shopware installer styles (bundles/installer/assets/styles/*.css),
+ * so rules in this file override them. Only add Muckidrive-specific changes here.
+ */
+
+:root {
+    /* Muckidrive main color instead of the Shopware blue #189eff */
+    --color-shopware-brand-50: #ffd5b8;
+    --color-shopware-brand-500: #eb5f00;
+    /* hover and active color of the primary button */
+    --color-shopware-brand-700: #522100;
+    --color-shopware-brand-800: #522100;
+    --box-shadow-field: 0 0 4px 0 rgba(235, 95, 0, 0.3);
+}
+
+.header-main__logo {
+    height: auto;
+}

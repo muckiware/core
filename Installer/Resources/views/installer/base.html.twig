@@ -1,0 +1,148 @@
+{#
+    Muckidrive copy of @!Installer/installer/base.html.twig (Shopware 6.7.15.1). The Shopware template has no
+    blocks for head, logo or menu, so it is copied. Differences:
+    - title, favicons and logo use Muckidrive (bundles/muckidriveinstaller)
+    - muckidrive.css is loaded after the Shopware styles
+    - the license step is not part of the menu
+#}
+{% set menu = (menu ?? [])|filter(entry => entry.label != 'license') %}
+<!DOCTYPE html>
+
+<html lang="{{ app.request.locale }}">
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>{{ "shopware.installer.header_title"|trans }} | Muckidrive</title>
+
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('bundles/muckidriveinstaller/assets/images/favicon/favicon-16x16.png', 'asset') }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('bundles/muckidriveinstaller/assets/images/favicon/favicon-32x32.png', 'asset') }}">
+        <meta name="msapplication-TileColor" content="#eb5f00">
+        <meta name="theme-color" content="#eb5f00">
+
+        <link rel="stylesheet" type="text/css" href="{{ asset('bundles/installer/assets/styles/reset.css', 'asset') }}?v={{ shopware.version }}" media="all"/>
+        <link rel="stylesheet" type="text/css" href="{{ asset('bundles/installer/assets/styles/fonts.css', 'asset') }}?v={{ shopware.version }}" media="all"/>
+        <link rel="stylesheet" type="text/css" href="{{ asset('bundles/installer/assets/styles/icons.css', 'asset') }}?v={{ shopware.version }}" media="all"/>
+        <link rel="stylesheet" type="text/css" href="{{ asset('bundles/installer/assets/styles/style.css', 'asset') }}?v={{ shopware.version }}" media="all"/>
+        <link rel="stylesheet" type="text/css" href="{{ asset('bundles/muckidriveinstaller/assets/styles/muckidrive.css', 'asset') }}?v={{ shopware.version }}" media="all"/>
+    </head>
+    <body>
+        <header class="header-main">
+            <div class="header-main__branding">
+                <img class="header-main__logo" src="{{ asset('bundles/muckidriveinstaller/assets/images/logo.svg', 'asset') }}" width="100" alt="Muckidrive-logo">
+                <div class="header-main__title">
+                    {{ "shopware.installer.header_title"|trans }}
+                </div>
+
+                <div class="version--notice">
+                    {{ "shopware.installer.version_text"|trans }} {{ shopware.version }}
+                </div>
+            </div>
+
+            <div class="header-main__right">
+                <div class="header-main__language-selection">
+                    <form action="{{ app.request.uri }}" method="get">
+                        <label for="language">
+                            {{ "shopware.installer.language-selection_select_language"|trans }}
+                        </label>
+                        <div class="select-wrapper language">
+                            <img class="language-flag"
+                                 src="{{ asset('bundles/installer/assets/images/flags/' ~ app.request.locale ~ '.svg', 'asset') }}"
+                                 alt="{{ app.request.locale }}">
+                            <select
+                                id="language"
+                                name="language"
+                                class="language-selection"
+                                onchange="changeLanguage(this.value);"
+                                onmousedown="if (this.disabled) { event.preventDefault(); }"
+                            >
+                                {% for baseTag, language in supportedLanguages %}
+                                    <option
+                                        value="{{ baseTag }}"
+                                        data-flag="{{ baseTag }}"
+                                        {% if app.request.locale == baseTag %}selected{% endif %}
+                                    >
+                                        {{ language.label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </header>
+
+        <div class="page--wrap">
+            <div class="content--wrapper">
+                <nav class="navigation--main">
+                    <ul class="navigation--list">
+                        {% for entry in menu %}
+                            <li class="navigation--entry {% if entry.active %}is--active{% endif %} {% if entry.isCompleted %}is--complete{% endif %}">
+                                <span class="navigation--link">{{ ("shopware.installer.menuitem." ~ entry.label)|trans }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+
+                <main class="content--main">
+                    {% block base_content %}{% endblock %}
+                </main>
+            </div>
+        </div>
+
+        <div class="footer-main">
+            <div class="help-container"></div>
+        </div>
+
+        <script>
+            function changeLanguage(language) {
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('language', language);
+
+                window.location.href = currentUrl.toString();
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const tooltipElements = document.querySelectorAll('[data-tooltip]');
+
+                tooltipElements.forEach(function (element) {
+                    // Create tooltip container
+                    const tooltipContainer = document.createElement('div');
+                    tooltipContainer.className = 'tooltip-content';
+                    tooltipContainer.innerHTML = element.getAttribute('data-tooltip');
+                    element.appendChild(tooltipContainer);
+
+                    // Create tooltip arrow
+                    const tooltipArrow = document.createElement('div');
+                    tooltipArrow.className = 'tooltip-arrow';
+                    element.appendChild(tooltipArrow);
+
+                    // Prevent clicks inside tooltip content from closing it
+                    tooltipContainer.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                    });
+
+                    element.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        element.classList.toggle('tooltip-active');
+
+                        tooltipElements.forEach(function (otherElement) {
+                            if (otherElement !== element) {
+                                otherElement.classList.remove('tooltip-active');
+                            }
+                        });
+                    });
+                });
+
+                // Close tooltip when clicking outside
+                document.addEventListener('click', function (e) {
+                    if (!e.target.closest('[data-tooltip]')) {
+                        tooltipElements.forEach(function (element) {
+                            element.classList.remove('tooltip-active');
+                        });
+                    }
+                });
+            })
+        </script>
+    </body>
+</html>

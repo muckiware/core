@@ -1,0 +1,132 @@
+{% extends '@Installer/installer/base.html.twig' %}
+
+{% block base_content %}
+    <div class="card__title">
+        <h2>{{ "shopware.installer.configuration_header"|trans }}</h2>
+    </div>
+
+    <form id="system-configuration" action="{{ url('installer.configuration') }}" method="post">
+        <div class="card__body">
+            {% if error %}
+                <div class="alert alert-error">
+                    <pre>{{ error }}</pre>
+                </div>
+            {% endif %}
+
+            <p>{{ "shopware.installer.configuration_sconfig_text"|trans }}</p>
+
+            <!-- System data section -->
+            <div class="section-header">
+                <h3 class="section-title">{{ "shopware.installer.configuration_admin_shop_headline"|trans }}</h3>
+            </div>
+
+            <p>
+                <label for="config_shopName">{{ "shopware.installer.configuration_sconfig_name"|trans }}</label>
+                <input type="text"
+                       value="{{ parameters.config_shopName ?? '' }}"
+                       name="config_shopName"
+                       id="config_shopName"
+                       required="required"
+                       autofocus/>
+            </p>
+
+            <p>
+                <label for="config_mail">
+                    {{ "shopware.installer.configuration_sconfig_mail"|trans }}
+                    <a class="help-badge"
+                       href="#"
+                       data-tooltip="{{ "shopware.installer.configuration_email_help_text"|trans }}">
+                        <i class="icon-help"></i>
+                    </a>
+                </label>
+                <input type="email"
+                       value="{{ parameters.config_mail ?? '' }}"
+                       name="config_mail"
+                       id="config_mail"
+                       required="required"/>
+            </p>
+
+            <p>
+                <label for="config_shop_language">{{ "shopware.installer.configuration_sconfig_language"|trans }}</label>
+                <span class="select-wrapper">
+                    <select name="config_shop_language" id="config_shop_language">
+                        {% for language in languageIsos %}
+                            <option value="{{ language.id }}" {% if parameters.config_shop_language == language.id %}selected{% endif %}>
+                                {{ ("shopware.installer.select_language_" ~ language.id)|trans }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </span>
+            </p>
+
+            <!-- Admin user data section -->
+            <div class="section-header">
+                <h3 class="section-title">{{ "shopware.installer.configuration_admin_user_headline"|trans|default('Admin user data') }}</h3>
+            </div>
+
+            <p>
+                <label for="config_admin_email">{{ "shopware.installer.configuration_admin_mail"|trans }}</label>
+                <input type="email"
+                       value="{{ parameters.config_admin_email ?? '' }}"
+                       name="config_admin_email"
+                       id="config_admin_email"
+                       required="required"/>
+            </p>
+
+            <div class="form-group form-group--50">
+                <p>
+                    <label for="config_admin_firstName">{{ "shopware.installer.configuration_admin_firstName"|trans }}</label>
+                    <input type="text"
+                           value="{{ parameters.config_admin_firstName ?? '' }}"
+                           name="config_admin_firstName"
+                           id="config_admin_firstName"
+                           required="required"/>
+                </p>
+
+                <p>
+                    <label for="config_admin_lastName">{{ "shopware.installer.configuration_admin_lastName"|trans }}</label>
+                    <input type="text"
+                           value="{{ parameters.config_admin_lastName ?? '' }}"
+                           name="config_admin_lastName"
+                           id="config_admin_lastName"
+                           required="required"/>
+                </p>
+            </div>
+
+            <div class="form-group form-group--50">
+                <p>
+                    <label for="config_admin_username">{{ "shopware.installer.configuration_admin_username"|trans }}</label>
+                    <input type="text"
+                           value="{{ parameters.config_admin_username ?? '' }}"
+                           name="config_admin_username"
+                           id="config_admin_username"
+                           required="required"/>
+                </p>
+
+                <p>
+                    <label for="config_admin_password">{{ "shopware.installer.configuration_admin_password"|trans }}</label>
+                    <input type="password"
+                           value=""
+                           name="config_admin_password"
+                           id="config_admin_password"
+                           required="required"/>
+                </p>
+            </div>
+        </div>
+
+        <div class="card__footer flex-container">
+            <a href="{{ url('installer.database-import') }}" class="btn btn-default flex-item">{{ "shopware.installer.back"|trans }}</a>
+            <button type="submit"
+                    class="btn btn-primary flex-item flex-right"
+                    onclick="document.getElementById('system-configuration').classList.add('is--submitted'); setLastActivity();">
+                {{ "shopware.installer.forward"|trans }}
+            </button>
+        </div>
+    </form>
+
+    <script>
+        function setLastActivity() {
+            localStorage.setItem('lastActivity', `${Date.now()}`);
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,25 @@
+# Muckidrive-specific texts only. All other installer texts are loaded from
+# vendor/shopware/core/Installer/Resources/translations and are overridden key by key.
+shopware.installer:
+    menuitem:
+        configuration: System configuration
+    welcome:
+        title: 'Welcome to Muckidrive'
+        header: 'Your Muckidrive installation'
+        message: >
+            This installer will guide you through each step required to install Muckidrive smoothly.
+    requirements_error_title: 'Your system is not yet ready for Muckidrive'
+    requirements_success_title: 'Your system is ready for Muckidrive'
+    requirements_php_info: 'Your server must meet the following system requirements in order to run Muckidrive.'
+    database-configuration_info: 'In order to install Muckidrive on your system, you will need the access credentials to your database. If you are not sure what to put here, contact your administrator/hosting service.'
+    database-configuration_invalid_requirements: 'Muckidrive requires at least MySQL 8.0.22 or MariaDB 10.11'
+    database-import_info_text: 'Installing Muckidrive using the selected database. This process may take several minutes, depending on your overall system.'
+    database_import_success: 'Muckidrive has been installed!'
+    configuration_sconfig_text: 'Almost done. You just need to make a few basic settings for your system, Muckidrive will be installed completely afterwards.'
+    configuration_admin_shop_headline: 'System data'
+    configuration_sconfig_name: 'System name'
+    configuration_sconfig_mail: 'System email address:'
+    configuration_email_help_text: 'This email address will be used for outgoing system emails.'
+    finish_title: 'The setup for Muckidrive is done.'
+    finish_subtitle: 'Click “Continue to administration” to open the Muckidrive administration.'
+    finish_continue: 'Continue to administration'
