@@ -44,7 +44,6 @@ use Shopware\Core\Framework\Increment\IncrementerGatewayCompilerPass;
 use Shopware\Core\Framework\Log\Package;
 use Shopware\Core\Framework\MessageQueue\MessageHandlerCompilerPass;
 use Shopware\Core\Framework\Telemetry\Metrics\MeterProvider;
-use Shopware\Core\Framework\Test\DependencyInjection\CompilerPass\ContainerVisibilityCompilerPass;
 use Shopware\Core\Framework\Test\RateLimiter\DisableRateLimiterCompilerPass;
 
 use Symfony\Component\Config\FileLocator;
@@ -154,7 +153,6 @@ class Framework extends Bundle
 
         if ($container->getParameter('kernel.environment') === 'test') {
             $container->addCompilerPass(new DisableRateLimiterCompilerPass());
-            $container->addCompilerPass(new ContainerVisibilityCompilerPass());
         }
 
         $container->addCompilerPass(new FrameworkMigrationReplacementCompilerPass());
