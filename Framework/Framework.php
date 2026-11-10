@@ -11,7 +11,6 @@ namespace Muckiware\Core\Framework;
 
 use Shopware\Core\Framework\Adapter\Cache\CacheCompilerPass;
 use Shopware\Core\Framework\Adapter\Cache\CacheValueCompressor;
-use Shopware\Core\Framework\Adapter\Cache\ReverseProxy\ReverseProxyCompilerPass;
 use Shopware\Core\Framework\Adapter\Cache\StampedeProtectionConfigurator;
 use Shopware\Core\Framework\Adapter\Redis\RedisConnectionsCompilerPass;
 use Shopware\Core\Framework\Bundle;
@@ -45,7 +44,6 @@ use Shopware\Core\Framework\Increment\IncrementerGatewayCompilerPass;
 use Shopware\Core\Framework\Log\Package;
 use Shopware\Core\Framework\MessageQueue\MessageHandlerCompilerPass;
 use Shopware\Core\Framework\Telemetry\Metrics\MeterProvider;
-use Shopware\Core\Framework\Test\DependencyInjection\CompilerPass\ContainerVisibilityCompilerPass;
 use Shopware\Core\Framework\Test\RateLimiter\DisableRateLimiterCompilerPass;
 
 use Symfony\Component\Config\FileLocator;
@@ -144,7 +142,6 @@ class Framework extends Bundle
         $container->addCompilerPass(new FilesystemConfigMigrationCompilerPass());
         $container->addCompilerPass(new RateLimiterCompilerPass());
         $container->addCompilerPass(new IncrementerGatewayCompilerPass());
-        $container->addCompilerPass(new ReverseProxyCompilerPass());
         $container->addCompilerPass(new CacheCompilerPass());
         $container->addCompilerPass(new OverwriteSessionFactoryCompilerPass());
         $container->addCompilerPass(new RedisPrefixCompilerPass(), PassConfig::TYPE_BEFORE_REMOVING, 0);
@@ -156,7 +153,6 @@ class Framework extends Bundle
 
         if ($container->getParameter('kernel.environment') === 'test') {
             $container->addCompilerPass(new DisableRateLimiterCompilerPass());
-            $container->addCompilerPass(new ContainerVisibilityCompilerPass());
         }
 
         $container->addCompilerPass(new FrameworkMigrationReplacementCompilerPass());
