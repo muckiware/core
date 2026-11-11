@@ -33,6 +33,28 @@ use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 #[Package('framework')]
 final class InstallerKernel extends SWInstallerKernel
 {
+    /**
+     * @param string|null $projectDir explicit project root; when null it is resolved via the Composer root package
+     */
+    public function __construct(string $environment, bool $debug, private readonly ?string $projectDir = null)
+    {
+        parent::__construct($environment, $debug);
+    }
+
+    /**
+     * The Shopware implementation walks up from the kernel class file until it finds a vendor directory. That
+     * resolves the wrong project when muckiware/core is symlinked from outside the project (path repository),
+     * so the project dir is taken from the constructor or the Composer root package first.
+     */
+    public function getProjectDir(): string
+    {
+        if ($this->projectDir !== null && $this->projectDir !== '') {
+            return rtrim($this->projectDir, '/');
+        }
+
+        return $this->resolveRootPackageDir() ?? parent::getProjectDir();
+    }
+
     protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader): void
     {
         parent::configureContainer($container, $loader);
@@ -74,6 +96,13 @@ final class InstallerKernel extends SWInstallerKernel
 
         // Imported after the Shopware routes, so routes with the same name replace the Shopware ones.
         $routes->import(__DIR__ . '/Resources/config/routes.php');
+    }
+
+    private function resolveRootPackageDir(): ?string
+    {
+        $realPath = realpath(InstalledVersions::getRootPackage()['install_path']);
+
+        return $realPath !== false && \is_dir($realPath . '/vendor') ? $realPath : null;
     }
 
     /**
