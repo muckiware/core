@@ -156,8 +156,12 @@ only the controllers that make sense without a shop:
 
 ### 6. Web installer (`Installer/`)
 
-`public/index.php` boots `Muckiware\Core\Installer\InstallerKernel` as long as there is no
-`install.lock` (and `SHOPWARE_SKIP_WEBINSTALLER` is not set). The kernel extends the Shopware
+`public/index.php` delegates to `Framework\Adapter\Kernel\KernelBootstrap`, which boots
+`Muckiware\Core\Installer\InstallerKernel` as long as there is no `install.lock` (and
+`SHOPWARE_SKIP_WEBINSTALLER` is not set) and redirects every other request to `/installer`.
+The front controller comes from the `muckiware/core` recipe in
+[muckiware/recipes](https://github.com/muckiware/recipes) (recipe `0.1` for this package version
+`0.1.x`), so the kernel selection itself is updated with `composer update`. The kernel extends the Shopware
 installer kernel; bundle, views, translations and assets still come from vendor. Replaced parts:
 
 | Part | Change |

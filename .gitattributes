@@ -1,0 +1,7 @@
+# Exclude repository-only files from the Composer dist archive (Packagist downloads
+# GitHub zipballs = git archive), so projects do not install tests and CI config.
+/.github export-ignore
+/Tests export-ignore
+/phpunit.xml.dist export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
