@@ -7,6 +7,14 @@
     "autoload": {
         "psr-4": {
             "Muckiware\\Core\\": ""
+        },
+        "exclude-from-classmap": [
+            "Tests/"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Muckiware\\Core\\Tests\\": "Tests/"
         }
     },
     "require": {
