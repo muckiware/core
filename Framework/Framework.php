@@ -95,6 +95,7 @@ class Framework extends Bundle
     private const SW_CLASS_REPLACEMENTS = [
         'Shopware\\Core\\Framework\\App\\Hmac\\QuerySigner' => \Muckiware\Core\Framework\App\Hmac\QuerySigner::class,
         'Shopware\\Core\\Framework\\App\\Payload\\AppPayloadServiceHelper' => \Muckiware\Core\Framework\App\Payload\AppPayloadServiceHelper::class,
+        'Shopware\\Core\\Framework\\Store\\Services\\StoreClient' => \Muckiware\Core\Framework\Store\Services\StoreClient::class,
     ];
 
     /**

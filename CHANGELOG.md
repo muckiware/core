@@ -5,6 +5,15 @@ All notable changes to `muckiware/core` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions follow the
 `version` field in `composer.json` (release tag `v<version>`).
 
+## [Unreleased]
+
+### Changed
+- Replaced Shopware's `StoreClient` with `Muckiware\Core\Framework\Store\Services\StoreClient`.
+  The extension listing (`/api/_action/extension/installed`) and the store API endpoints
+  (`/api/_action/store/updates`, `/license-violations`, `/plugin/search`) no longer send the
+  installed extensions to `api.shopware.com` (`/swplatform/pluginupdates`,
+  `/swplatform/licenseenvironment`, `/swplatform/environmentinformation`).
+
 ## [0.1.0.1] - 2026-11-27
 
 ### Changed
