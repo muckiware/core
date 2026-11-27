@@ -13,6 +13,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   (`/api/_action/store/updates`, `/license-violations`, `/plugin/search`) no longer send the
   installed extensions to `api.shopware.com` (`/swplatform/pluginupdates`,
   `/swplatform/licenseenvironment`, `/swplatform/environmentinformation`).
+- Replaced Shopware's `StoreClientFactory` with `Muckiware\Core\Framework\Store\Services\StoreClientFactory`.
+  The `shopware.store_client` and `shopware.frw_client` HTTP clients reject every request with a
+  `StoreException` (`MUCKIWARE__STORE_DISABLED`, HTTP 503), so store login, plugin downloads,
+  tracking and in-app purchase/JWKS lookups can no longer reach `api.shopware.com`.
+
+### Removed
+- Shopware's `InAppPurchaseUpdateTask` scheduled task and its `InAppPurchaseUpdateHandler`. The
+  daily task only fetched in-app purchases from the Shopware Store. Existing installations drop the
+  `in-app-purchase.update` row on the next `scheduled-task:register`.
 
 ## [0.1.0.1] - 2026-11-27
 
