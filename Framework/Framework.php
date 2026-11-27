@@ -83,6 +83,8 @@ class Framework extends Bundle
         'Shopware\\Core\\Framework\\App\\ScheduledTask\\UpdateAppsTask',
         'Shopware\\Core\\Framework\\Demodata\\PersonalData\\CleanPersonalDataCommand',
         'Shopware\\Core\\Framework\\Routing\\SalesChannelRequestContextResolver',
+        'Shopware\\Core\\Framework\\Store\\InAppPurchase\\Handler\\InAppPurchaseUpdateHandler',
+        'Shopware\\Core\\Framework\\Store\\InAppPurchase\\InAppPurchaseUpdateTask',
         'Shopware\\Core\\Framework\\Webhook\\Service\\WebhookManager',
         'Shopware\\Core\\Framework\\Webhook\\WebhookCacheClearer',
         'Shopware\\Core\\Framework\\Webhook\\WebhookDispatcher',
@@ -95,6 +97,8 @@ class Framework extends Bundle
     private const SW_CLASS_REPLACEMENTS = [
         'Shopware\\Core\\Framework\\App\\Hmac\\QuerySigner' => \Muckiware\Core\Framework\App\Hmac\QuerySigner::class,
         'Shopware\\Core\\Framework\\App\\Payload\\AppPayloadServiceHelper' => \Muckiware\Core\Framework\App\Payload\AppPayloadServiceHelper::class,
+        'Shopware\\Core\\Framework\\Store\\Services\\StoreClient' => \Muckiware\Core\Framework\Store\Services\StoreClient::class,
+        'Shopware\\Core\\Framework\\Store\\Services\\StoreClientFactory' => \Muckiware\Core\Framework\Store\Services\StoreClientFactory::class,
     ];
 
     /**
